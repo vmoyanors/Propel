@@ -9,7 +9,7 @@
  */
 
 /**
- * Dumps the contenst of selected databases to XML data dump file.
+ * Dumps the content of selected databases to XML data dump file.
  *
  * The results of the data dump can be converted to SQL using
  * the PropelDataSQLTask class.
@@ -49,18 +49,21 @@ class PropelDataDumpTask extends AbstractPropelDataModelTask
 
     /**
      * Database user used for Propel connection.
+     *
      * @deprecated Put username in databaseUrl.
      */
     private $databaseUser;
 
     /**
      * Database password used for Propel connection.
+     *
      * @deprecated Put password in databaseUrl.
      */
     private $databasePassword;
 
     /**
      * Properties file that maps a data XML file to a particular database.
+     *
      * @var        PhingFile
      */
     private $datadbmap;
@@ -79,7 +82,8 @@ class PropelDataDumpTask extends AbstractPropelDataModelTask
     /**
      * Set the file that maps between data XML files and databases.
      *
-     * @param  PhingFile $sqldbmap the db map
+     * @param PhingFile $datadbmap the db map
+     *
      * @return void
      */
     public function setDataDbMap(PhingFile $datadbmap)
@@ -110,7 +114,7 @@ class PropelDataDumpTask extends AbstractPropelDataModelTask
     /**
      * Set the database name
      *
-     * @param      v The new DatabaseName value
+     * @param   $v The new DatabaseName value
      */
     public function setDatabaseName($v)
     {
@@ -152,6 +156,7 @@ class PropelDataDumpTask extends AbstractPropelDataModelTask
      * Set the database user
      *
      * @param string $v The new DatabaseUser value
+     *
      * @deprecated Specify user in DSN URL.
      */
     public function setDatabaseUser($v)
@@ -173,6 +178,7 @@ class PropelDataDumpTask extends AbstractPropelDataModelTask
      * Set the database password
      *
      * @param string $v The new DatabasePassword value
+     *
      * @deprecated Specify database password in DSN URL.
      */
     public function setDatabasePassword($v)
@@ -223,7 +229,7 @@ class PropelDataDumpTask extends AbstractPropelDataModelTask
             $datadbmap->load($this->getDataDbMap());
         }
 
-        foreach ($this->getDataModels() as $dataModel) {            // there is really one 1 db per datamodel
+        foreach ($this->getDataModels() as $dataModel) { // there is really one 1 db per datamodel
             foreach ($dataModel->getDatabases() as $database) {
 
                 // if database name is specified, then we only want to dump that one db.
@@ -237,7 +243,7 @@ class PropelDataDumpTask extends AbstractPropelDataModelTask
         try {
             $datadbmap->store($this->getDataDbMap(), "Data XML file -> Database map");
         } catch (IOException $e) {
-            throw new IOException("Unable to store properties: ". $e->getMessage());
+            throw new IOException("Unable to store properties: " . $e->getMessage());
         }
     }
 
@@ -263,7 +269,7 @@ class PropelDataDumpTask extends AbstractPropelDataModelTask
         $this->createDataDbMap();
 
         // 2) Now go create the XML files from teh database(s)
-        foreach ($this->getDataModels() as $dataModel) {            // there is really one 1 db per datamodel
+        foreach ($this->getDataModels() as $dataModel) { // there is really one 1 db per datamodel
             foreach ($dataModel->getDatabases() as $database) {
 
                 // if database name is specified, then we only want to dump that one db.
@@ -275,25 +281,12 @@ class PropelDataDumpTask extends AbstractPropelDataModelTask
                     $this->log("Writing to XML file: " . $outFile->getName());
 
                     try {
-
-                        $url = str_replace("@DB@", $database->getName(), $this->databaseUrl);
-
-                        if ($url !== $this->databaseUrl) {
-                            $this->log("New (resolved) URL: " . $url, Project::MSG_VERBOSE);
-                        }
-
-                        if (empty($url)) {
-                            throw new BuildException("Unable to connect to database; no PDO connection URL specified.", $this->getLocation());
-                        }
-
-                        $this->conn = new PDO($url, $this->databaseUser, $this->databasePassword);
-                        $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+                        $this->conn = $dataModel->getGeneratorConfig()->getBuildPDO($database->getName());
 
                         $doc = $this->createXMLDoc($database);
                         $doc->save($outFile->getAbsolutePath());
-
                     } catch (SQLException $se) {
-                        $this->log("SQLException while connecting to DB: ". $se->getMessage(), Project::MSG_ERR);
+                        $this->log("SQLException while connecting to DB: " . $se->getMessage(), Project::MSG_ERR);
                         throw new BuildException($se);
                     }
                 } // if databaseName && database->getName == databaseName
@@ -303,18 +296,22 @@ class PropelDataDumpTask extends AbstractPropelDataModelTask
 
     /**
      * Gets PDOStatement of query to fetch all data from a table.
-     * @param  string                  $tableName
-     * @param  PropelPlatformInterface $platform
+     *
+     * @param string                  $tableName
+     * @param PropelPlatformInterface $platform
+     *
      * @return PDOStatement
      */
     private function getTableDataStmt($tableName, PropelPlatformInterface $platform)
     {
-        return $this->conn->query("SELECT * FROM " . $platform->quoteIdentifier( $tableName ) );
+        return $this->conn->query("SELECT * FROM " . $platform->quoteIdentifier($tableName));
     }
 
     /**
      * Creates a DOM document containing data for specified database.
-     * @param  Database    $database
+     *
+     * @param Database $database
+     *
      * @return DOMDocument
      */
     private function createXMLDoc(Database $database)

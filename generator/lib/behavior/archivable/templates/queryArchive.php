@@ -1,4 +1,3 @@
-
 /**
  * Copy the data of the objects satisfying the query into <?php echo $archiveTablePhpName ?> archive objects.
  * The archived objects are then saved.
@@ -34,7 +33,7 @@ public function archive($con = null, $useLittleMemory = true)
             $totalArchivedObjects++;
         }
         $con->commit();
-    } catch (PropelException $e) {
+    } catch (Exception $e) {
         $con->rollBack();
         throw $e;
     }

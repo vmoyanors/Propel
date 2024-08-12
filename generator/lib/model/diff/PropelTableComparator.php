@@ -8,12 +8,11 @@
  * @license     MIT License
  */
 
-require_once dirname(__FILE__) . '/../Table.php';
-require_once dirname(__FILE__) . '/PropelTableDiff.php';
-require_once dirname(__FILE__) . '/PropelColumnComparator.php';
-require_once dirname(__FILE__) . '/PropelColumnDiff.php';
-require_once dirname(__FILE__) . '/PropelIndexComparator.php';
-require_once dirname(__FILE__) . '/PropelForeignKeyComparator.php';
+
+
+
+
+
 
 /**
  * Service class for comparing Table objects
@@ -79,8 +78,8 @@ class PropelTableComparator
     /**
      * Compute and return the difference between two table objects
      *
-     * @param Column  $fromTable
-     * @param Column  $toTable
+     * @param Table   $fromTable
+     * @param Table   $toTable
      * @param boolean $caseInsensitive Whether the comparison is case insensitive.
      *                                 False by default.
      *
@@ -136,7 +135,7 @@ class PropelTableComparator
         foreach ($fromTableColumns as $fromColumn) {
             if ($this->getToTable()->hasColumn($fromColumn->getName(), $caseInsensitive)) {
                 $toColumn = $this->getToTable()->getColumn($fromColumn->getName(), $caseInsensitive);
-                $columnDiff = PropelColumnComparator::computeDiff($fromColumn, $toColumn, $caseInsensitive);
+                $columnDiff = PropelColumnComparator::computeDiff($fromColumn, $toColumn);
                 if ($columnDiff) {
                     $this->tableDiff->addModifiedColumn($fromColumn->getName(), $columnDiff);
                     $columnDifferences++;
@@ -147,12 +146,14 @@ class PropelTableComparator
         // check for column renamings
         foreach ($this->tableDiff->getAddedColumns() as $addedColumnName => $addedColumn) {
             foreach ($this->tableDiff->getRemovedColumns() as $removedColumnName => $removedColumn) {
-                if (!PropelColumnComparator::computeDiff($addedColumn, $removedColumn, $caseInsensitive)) {
+                if (!PropelColumnComparator::computeDiff($addedColumn, $removedColumn)) {
                     // no difference except the name, that's probably a renaming
                     $this->tableDiff->addRenamedColumn($removedColumn, $addedColumn);
                     $this->tableDiff->removeAddedColumn($addedColumnName);
                     $this->tableDiff->removeRemovedColumn($removedColumnName);
                     $columnDifferences--;
+                    // skip to the next added column
+                    break;
                 }
             }
         }
@@ -178,8 +179,7 @@ class PropelTableComparator
 
         // check for new pk columns in $toTable
         foreach ($toTablePk as $column) {
-            if (!$this->getFromTable()->hasColumn($column->getName(), $caseInsensitive) ||
-                    !$this->getFromTable()->getColumn($column->getName(), $caseInsensitive)->isPrimaryKey()) {
+            if (!$this->getFromTable()->hasColumn($column->getName(), $caseInsensitive) || !$this->getFromTable()->getColumn($column->getName(), $caseInsensitive)->isPrimaryKey()) {
                 $this->tableDiff->addAddedPkColumn($column->getName(), $column);
                 $pkDifferences++;
             }
@@ -187,8 +187,7 @@ class PropelTableComparator
 
         // check for removed pk columns in $toTable
         foreach ($fromTablePk as $column) {
-            if (!$this->getToTable()->hasColumn($column->getName(), $caseInsensitive) ||
-                    !$this->getToTable()->getColumn($column->getName(), $caseInsensitive)->isPrimaryKey()) {
+            if (!$this->getToTable()->hasColumn($column->getName(), $caseInsensitive) || !$this->getToTable()->getColumn($column->getName(), $caseInsensitive)->isPrimaryKey()) {
                 $this->tableDiff->addRemovedPkColumn($column->getName(), $column);
                 $pkDifferences++;
             }
@@ -197,12 +196,14 @@ class PropelTableComparator
         // check for column renamings
         foreach ($this->tableDiff->getAddedPkColumns() as $addedColumnName => $addedColumn) {
             foreach ($this->tableDiff->getRemovedPkColumns() as $removedColumnName => $removedColumn) {
-                if (!PropelColumnComparator::computeDiff($addedColumn, $removedColumn, $caseInsensitive)) {
+                if (!PropelColumnComparator::computeDiff($addedColumn, $removedColumn)) {
                     // no difference except the name, that's probably a renaming
                     $this->tableDiff->addRenamedPkColumn($removedColumn, $addedColumn);
                     $this->tableDiff->removeAddedPkColumn($addedColumnName);
                     $this->tableDiff->removeRemovedPkColumn($removedColumnName);
                     $pkDifferences--;
+                    // skip to the next added column
+                    break;
                 }
             }
         }
@@ -311,5 +312,4 @@ class PropelTableComparator
 
         return $fkDifferences;
     }
-
 }

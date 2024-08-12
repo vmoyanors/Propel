@@ -1,6 +1,6 @@
 <?php
 
-class Issue651Test extends PHPUnit_Framework_TestCase
+class Issue651Test extends \PHPUnit\Framework\TestCase
 {
 
     public function testIndex()
@@ -114,7 +114,6 @@ CREATE TABLE `module`
 # This restores the fkey checks, after having unset them earlier
 SET FOREIGN_KEY_CHECKS = 1;
 ";
-
 
         $platform = new MysqlPlatform();
         $platform->setDefaultTableEngine('InnoDb');

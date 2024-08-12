@@ -8,7 +8,6 @@
  * @license    MIT License
  */
 
-require_once dirname(__FILE__) . '/Pluralizer.php';
 
 /**
  * Standard replacement English pluralizer class. Based on the links below
@@ -111,7 +110,9 @@ class StandardEnglishPluralizer implements Pluralizer
 
     /**
      * Generate a plural name based on the passed in root.
-     * @param  string $root The root that needs to be pluralized (e.g. Author)
+     *
+     * @param string $root The root that needs to be pluralized (e.g. Author)
+     *
      * @return string The plural form of $root (e.g. Authors).
      */
     public function getPluralForm($root)

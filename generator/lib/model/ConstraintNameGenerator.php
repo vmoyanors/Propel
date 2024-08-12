@@ -30,14 +30,14 @@ class ConstraintNameGenerator implements NameGenerator
      * should be a table name, third is the type identifier (spared if
      * trimming is necessary due to database type length constraints),
      * and the fourth is a <code>Integer</code> indicating the number
-     * of this contraint.
+     * of this constraint.
      *
      * @see        NameGenerator
      * @throws EngineException
      */
     public function generateName($inputs)
     {
-
+        /* @var $db Database */
         $db = $inputs[0];
         $name = $inputs[1];
         $namePostfix = $inputs[2];
@@ -47,12 +47,10 @@ class ConstraintNameGenerator implements NameGenerator
         $maxBodyLength = -1;
         try {
             $maxColumnNameLength = (int) $db->getPlatform()->getMaxColumnNameLength();
-            $maxBodyLength = ($maxColumnNameLength - strlen($namePostfix)
-                    - strlen($constraintNbr) - 2);
+            $maxBodyLength = ($maxColumnNameLength - strlen($namePostfix) - strlen($constraintNbr) - 2);
 
             if (self::DEBUG) {
-                print("maxColumnNameLength=" . $maxColumnNameLength
-                        . " maxBodyLength=" . $maxBodyLength . "\n");
+                print("maxColumnNameLength=" . $maxColumnNameLength . " maxBodyLength=" . $maxBodyLength . "\n");
             }
         } catch (EngineException $e) {
             echo $e;
@@ -64,8 +62,7 @@ class ConstraintNameGenerator implements NameGenerator
             $name = substr($name, 0, $maxBodyLength);
         }
 
-        $name .= self::STD_SEPARATOR_CHAR . $namePostfix
-            . self::STD_SEPARATOR_CHAR . $constraintNbr;
+        $name .= self::STD_SEPARATOR_CHAR . $namePostfix . self::STD_SEPARATOR_CHAR . $constraintNbr;
 
         return $name;
     }

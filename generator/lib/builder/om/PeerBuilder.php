@@ -8,7 +8,6 @@
  * @license    MIT License
  */
 
-require_once dirname(__FILE__) . '/OMBuilder.php';
 
 /**
  * Base class for Peer-building classes.
@@ -42,7 +41,8 @@ abstract class PeerBuilder extends OMBuilder
 
     /**
      * Adds the addSelectColumns(), doCount(), etc. methods.
-     * @param      string &$script The script will be modified in this method.
+     *
+     * @param string &$script The script will be modified in this method.
      */
     protected function addSelectMethods(&$script)
     {
@@ -54,7 +54,7 @@ abstract class PeerBuilder extends OMBuilder
         // into a top-level method
         $this->addDoSelectOne($script);
         $this->addDoSelect($script);
-        $this->addDoSelectStmt($script);	 // <-- there's PDO code in here
+        $this->addDoSelectStmt($script); // <-- there's PDO code in here
 
         $this->addAddInstanceToPool($script);
         $this->addRemoveInstanceFromPool($script);
@@ -66,12 +66,12 @@ abstract class PeerBuilder extends OMBuilder
         $this->addGetPrimaryKeyFromRow($script);
         $this->addPopulateObjects($script); // <-- there's PDO code in here
         $this->addPopulateObject($script);
-
     }
 
     /**
      * Adds the correct getOMClass() method, depending on whether this table uses inheritance.
-     * @param      string &$script The script will be modified in this method.
+     *
+     * @param string &$script The script will be modified in this method.
      */
     protected function addGetOMClassMethod(&$script)
     {
@@ -89,7 +89,8 @@ abstract class PeerBuilder extends OMBuilder
 
     /**
      * Adds the doInsert(), doUpdate(), doDeleteAll(), doValidate(), etc. methods.
-     * @param      string &$script The script will be modified in this method.
+     *
+     * @param string &$script The script will be modified in this method.
      */
     protected function addUpdateMethods(&$script)
     {
@@ -108,7 +109,8 @@ abstract class PeerBuilder extends OMBuilder
 
     /**
      * Adds the retrieveByPK() (and possibly retrieveByPKs()) method(s) appropriate for this class.
-     * @param      string &$script The script will be modified in this method.
+     *
+     * @param string &$script The script will be modified in this method.
      */
     protected function addRetrieveByPKMethods(&$script)
     {
@@ -129,7 +131,7 @@ abstract class PeerBuilder extends OMBuilder
      * Hint: Override this method in your subclass if you want to reorganize or
      * drastically change the contents of the generated peer class.
      *
-     * @param      string &$script The script will be modified in this method.
+     * @param string &$script The script will be modified in this method.
      */
     protected function addClassBody(&$script)
     {
@@ -171,6 +173,7 @@ abstract class PeerBuilder extends OMBuilder
 
     /**
      * Whether the platform in use requires ON DELETE CASCADE emulation and whether there are references to this table.
+     *
      * @return boolean
      */
     protected function isDeleteCascadeEmulationNeeded()
@@ -189,6 +192,7 @@ abstract class PeerBuilder extends OMBuilder
 
     /**
      * Whether the platform in use requires ON DELETE SETNULL emulation and whether there are references to this table.
+     *
      * @return boolean
      */
     protected function isDeleteSetNullEmulationNeeded()
@@ -209,6 +213,7 @@ abstract class PeerBuilder extends OMBuilder
      * Whether to add the generic mutator methods (setByName(), setByPosition(), fromArray()).
      * This is based on the build property propel.addGenericMutators, and also whether the
      * table is read-only or an alias.
+     *
      * @return boolean
      */
     protected function isAddGenericMutators()
@@ -222,6 +227,7 @@ abstract class PeerBuilder extends OMBuilder
      * Whether to add the generic accessor methods (getByName(), getByPosition(), toArray()).
      * This is based on the build property propel.addGenericAccessors, and also whether the
      * table is an alias.
+     *
      * @return boolean
      */
     protected function isAddGenericAccessors()
@@ -235,6 +241,7 @@ abstract class PeerBuilder extends OMBuilder
      * Returns the retrieveByPK method name to use for this table.
      * If the table is an alias then the method name looks like "retrieveTablenameByPK"
      * otherwise simply "retrieveByPK".
+     *
      * @return string
      */
     public function getRetrieveMethodName()
@@ -277,27 +284,31 @@ abstract class PeerBuilder extends OMBuilder
     }
 
     /**
-   * Checks whether any registered behavior on that table has a modifier for a hook
-   * @param string $hookName The name of the hook as called from one of this class methods, e.g. "preSave"
-   * @return boolean
-   */
-  public function hasBehaviorModifier($hookName, $modifier = null)
-  {
-    return parent::hasBehaviorModifier($hookName, 'PeerBuilderModifier');
-  }
+     * Checks whether any registered behavior on that table has a modifier for a hook
+     *
+     * @param string $hookName The name of the hook as called from one of this class methods, e.g. "preSave"
+     *
+     * @return boolean
+     */
+    public function hasBehaviorModifier($hookName, $modifier = null)
+    {
+        return parent::hasBehaviorModifier($hookName, 'PeerBuilderModifier');
+    }
 
-  /**
-   * Checks whether any registered behavior on that table has a modifier for a hook
-   * @param string $hookName The name of the hook as called from one of this class methods, e.g. "preSave"
-     * @param string &$script The script will be modified in this method.
-   */
-  public function applyBehaviorModifier($hookName, &$script, $tab = "		")
-  {
-    return $this->applyBehaviorModifierBase($hookName, 'PeerBuilderModifier', $script, $tab);
-  }
+    /**
+     * Checks whether any registered behavior on that table has a modifier for a hook
+     *
+     * @param string $hookName The name of the hook as called from one of this class methods, e.g. "preSave"
+     * @param string &$script  The script will be modified in this method.
+     */
+    public function applyBehaviorModifier($hookName, &$script, $tab = "		")
+    {
+        return $this->applyBehaviorModifierBase($hookName, 'PeerBuilderModifier', $script, $tab);
+    }
 
     /**
      * Checks whether any registered behavior content creator on that table exists a contentName
+     *
      * @param string $contentName The name of the content as called from one of this class methods, e.g. "parentClassname"
      */
     public function getBehaviorContent($contentName)
@@ -305,13 +316,13 @@ abstract class PeerBuilder extends OMBuilder
         return $this->getBehaviorContentBase($contentName, 'PeerBuilderModifier');
     }
 
-  /**
-   * Get the BasePeer class name for the current table (e.g. 'BasePeer')
-   *
-   * @return string The Base Peer Class name
-   */
-  public function getBasePeerClassname()
-  {
-      return $this->basePeerClassname;
-  }
+    /**
+     * Get the BasePeer class name for the current table (e.g. 'BasePeer')
+     *
+     * @return string The Base Peer Class name
+     */
+    public function getBasePeerClassname()
+    {
+        return $this->basePeerClassname;
+    }
 }

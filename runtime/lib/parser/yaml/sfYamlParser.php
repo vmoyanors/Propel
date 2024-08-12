@@ -56,10 +56,8 @@ class sfYamlParser
     $this->currentLine = '';
     $this->lines = explode("\n", $this->cleanup($value));
 
-    if (function_exists('mb_internal_encoding') && ((int) ini_get('mbstring.func_overload')) & 2) {
-      $mbEncoding = mb_internal_encoding();
-      mb_internal_encoding('UTF-8');
-    }
+    $mbEncoding = mb_internal_encoding();
+    mb_internal_encoding('UTF-8');
 
     $data = array();
     while ($this->moveToNextLine()) {
@@ -125,7 +123,7 @@ class sfYamlParser
               }
             } else {
               // Associative array, merge
-              $merged = array_merge($merge, $parsed);
+              $merged = array_merge($merged, $parsed);
             }
 
             $isProcessed = $merged;
@@ -327,7 +325,7 @@ class sfYamlParser
     if (preg_match('/^(?P<separator>\||>)(?P<modifiers>\+|\-|\d+|\+\d+|\-\d+|\d+\+|\d+\-)?(?P<comments> +#.*)?$/', $value, $matches)) {
       $modifiers = isset($matches['modifiers']) ? $matches['modifiers'] : '';
 
-      return $this->parseFoldedScalar($matches['separator'], preg_replace('#\d+#', '', $modifiers), intval(abs($modifiers)));
+      return $this->parseFoldedScalar($matches['separator'], preg_replace('#\d+#', '', $modifiers), abs((int)$modifiers));
     } else {
       return sfYamlInline::load($value);
     }
@@ -373,7 +371,7 @@ class sfYamlParser
       $this->moveToNextLine();
 
       if (preg_match('#^(?P<indent> {'.strlen($textIndent).',})(?P<text>.+)$#u', $this->currentLine, $matches)) {
-        if (' ' == $separator && $previousIndent != $matches['indent']) {
+        if (' ' == $separator && ($previousIndent && $previousIndent != $matches['indent'])) {
           $text = substr($text, 0, -1)."\n";
         }
         $previousIndent = $matches['indent'];

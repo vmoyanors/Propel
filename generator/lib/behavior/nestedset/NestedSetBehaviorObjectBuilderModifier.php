@@ -45,8 +45,8 @@ class NestedSetBehaviorObjectBuilderModifier
         $this->builder = $builder;
 
         $this->objectClassname = $builder->getStubObjectBuilder()->getClassname();
-        $this->queryClassname  = $builder->getStubQueryBuilder()->getClassname();
-        $this->peerClassname   = $builder->getStubPeerBuilder()->getClassname();
+        $this->queryClassname = $builder->getStubQueryBuilder()->getClassname();
+        $this->peerClassname = $builder->getStubPeerBuilder()->getClassname();
 
         $this->builder->declareClass($builder->getStubObjectBuilder()->getFullyQualifiedClassname());
         $this->builder->declareClass($builder->getStubQueryBuilder()->getFullyQualifiedClassname());
@@ -159,8 +159,7 @@ if (\$this->isInTree()) {
         if ($this->getColumnPhpName('level_column') != 'Level') {
             $this->addGetLevel($script);
         }
-        if ($this->getParameter('use_scope') == 'true'
-            && $this->getColumnPhpName('scope_column') != 'ScopeValue') {
+        if ($this->getParameter('use_scope') == 'true' && $this->getColumnPhpName('scope_column') != 'ScopeValue') {
             $this->addGetScope($script);
         }
 
@@ -173,8 +172,7 @@ if (\$this->isInTree()) {
         if ($this->getColumnPhpName('level_column') != 'Level') {
             $this->addSetLevel($script);
         }
-        if ($this->getParameter('use_scope') == 'true'
-            && $this->getColumnPhpName('scope_column') != 'ScopeValue') {
+        if ($this->getParameter('use_scope') == 'true' && $this->getColumnPhpName('scope_column') != 'ScopeValue') {
             $this->addSetScope($script);
         }
 
@@ -250,6 +248,7 @@ protected function processNestedSetQueries(\$con)
 }
 ";
     }
+
     protected function addGetLeft(&$script)
     {
         $script .= "
@@ -1341,16 +1340,14 @@ protected function moveSubtreeTo(\$destLeft, \$levelDelta" . ($this->behavior->u
     \$left  = \$this->getLeftValue();
     \$right = \$this->getRightValue();";
 
-
         if ($useScope) {
             $script .= "
     \$scope = \$this->getScopeValue();
 
-    if (\$targetScope === null){
+    if (\$targetScope === null) {
         \$targetScope = \$scope;
     }";
         }
-
 
         $script .= "
 
@@ -1373,7 +1370,7 @@ protected function moveSubtreeTo(\$destLeft, \$levelDelta" . ($this->behavior->u
 
             $script .= "
 
-        if (\$targetScope != \$scope){
+        if (\$targetScope != \$scope) {
 
             //move subtree to < 0, so the items are out of scope.
             $peerClassname::shiftRLValues(-\$right, \$left, \$right" . ($useScope ? ", \$scope" : "") . ", \$con);
@@ -1391,12 +1388,11 @@ protected function moveSubtreeTo(\$destLeft, \$levelDelta" . ($this->behavior->u
             \$preventDefault = true;
         }
         ";
-
         }
 
         $script .= "
 
-        if (!\$preventDefault){
+        if (!\$preventDefault) {
 
 
             if (\$left >= \$destLeft) { // src was shifted too?
@@ -1422,7 +1418,7 @@ protected function moveSubtreeTo(\$destLeft, \$levelDelta" . ($this->behavior->u
         $peerClassname::updateLoadedNodes(null, \$con);
 
         \$con->commit();
-    } catch (PropelException \$e) {
+    } catch (Exception \$e) {
         \$con->rollback();
         throw \$e;
     }
@@ -1488,6 +1484,7 @@ public function deleteDescendants(PropelPDO \$con = null)
 
     protected function addGetIterator(&$script)
     {
+        $this->builder->declareClassNamespace('NestedSetRecursiveIterator');
         $script .= "
 /**
  * Returns a pre-order iterator for this node and its children.
@@ -1539,7 +1536,7 @@ public function setParentNode(\$parent = null)
 }
 
 /**
- * Alias for countDecendants(), for BC with Propel 1.4 nested sets
+ * Alias for countDescendants(), for BC with Propel 1.4 nested sets
  *
  * @deprecated since 1.5
  * @see        setParent

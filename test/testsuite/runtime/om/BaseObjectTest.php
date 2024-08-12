@@ -17,7 +17,7 @@ require_once dirname(__FILE__) . '/../../../../runtime/lib/om/BaseObject.php';
  * @version    $Id: BaseObjectTest.php 1347 2009-12-03 21:06:36Z francois $
  * @package    runtime.om
  */
-class BaseObjectTest extends PHPUnit_Framework_TestCase
+class BaseObjectTest extends \PHPUnit\Framework\TestCase
 {
     public function testGetVirtualColumns()
     {
@@ -40,6 +40,7 @@ class BaseObjectTest extends PHPUnit_Framework_TestCase
      */
     public function testGetVirtualColumnWrongKey()
     {
+        $this->expectException(PropelException::class);
         $b = new TestableBaseObject();
         $b->getVirtualColumn('foo');
     }
@@ -59,6 +60,26 @@ class BaseObjectTest extends PHPUnit_Framework_TestCase
         $b->setVirtualColumn('foo', 'baz');
         $this->assertEquals('baz', $b->getVirtualColumn('foo'), 'setVirtualColumn() can modify the value of an existing virtual column');
         $this->assertEquals($b, $b->setVirtualColumn('foo', 'bar'), 'setVirtualColumn() returns the current object');
+    }
+
+    public function testSetNewReturnsSelf()
+    {
+        $b = new TestableBaseObject();
+        $this->assertInstanceOf('TestableBaseObject', $b->setNew(false));
+        $this->assertInstanceOf('TestableBaseObject', $b->setNew(true));
+    }
+
+    public function testSetDeletedReturnsSelf()
+    {
+        $b = new TestableBaseObject();
+        $this->assertInstanceOf('TestableBaseObject', $b->setDeleted(false));
+        $this->assertInstanceOf('TestableBaseObject', $b->setDeleted(true));
+    }
+
+    public function testResetModifiedReturnsSelf()
+    {
+        $b = new TestableBaseObject();
+        $this->assertInstanceOf('TestableBaseObject', $b->resetModified());
     }
 }
 

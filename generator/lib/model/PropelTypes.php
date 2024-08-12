@@ -173,7 +173,7 @@ class PropelTypes
     );
 
     /**
-     * Mapping between Propel types and PDO type contants (for prepared statement setting).
+     * Mapping between Propel types and PDO type constants (for prepared statement setting).
      *
      * @var        array
      */
@@ -224,7 +224,7 @@ class PropelTypes
      * Return native PHP type which corresponds to the
      * Creole type provided. Use in the base object class generation.
      *
-     * @param         $propelType The Propel type name.
+     * @param  string $propelType The Propel type name.
      * @return string Name of the native PHP type
      */
     public static function getPhpNative($propelType)
@@ -235,16 +235,18 @@ class PropelTypes
     /**
      * Returns the correct Creole type _name_ for propel added types
      *
-     * @param         $type the propel added type.
+     * @param string $type the propel added type.
+     *
      * @return string Name of the the correct Creole type (e.g. "VARCHAR").
      */
     public static function getCreoleType($type)
     {
-        return  self::$propelTypeToCreoleTypeMap[$type];
+        return self::$propelTypeToCreoleTypeMap[$type];
     }
 
     /**
-     * Resturns the PDO type (PDO::PARAM_* constant) value.
+     * Returns the PDO type (PDO::PARAM_* constant) value.
+     *
      * @return int
      */
     public static function getPDOType($type)
@@ -253,7 +255,8 @@ class PropelTypes
     }
 
     /**
-     * Resturns the PDO type ('PDO::PARAM_*' constant) name.
+     * Returns the PDO type ('PDO::PARAM_*' constant) name.
+     *
      * @return string
      */
     public static function getPdoTypeString($type)
@@ -265,7 +268,8 @@ class PropelTypes
      * Returns Propel type constant corresponding to Creole type code.
      * Used but Propel Creole task.
      *
-     * @param  int    $sqlType The Creole SQL type constant.
+     * @param int $sqlType The Creole SQL type constant.
+     *
      * @return string The Propel type to use or NULL if none found.
      */
     public static function getPropelType($sqlType)
@@ -278,7 +282,7 @@ class PropelTypes
     /**
      * Get array of Propel types.
      *
-     * @return array string[]
+     * @return string[]
      */
     public static function getPropelTypes()
     {
@@ -288,7 +292,8 @@ class PropelTypes
     /**
      * Whether passed type is a temporal (date/time/timestamp) type.
      *
-     * @param  string  $type Propel type
+     * @param string $type Propel type
+     *
      * @return boolean
      */
     public static function isTemporalType($type)
@@ -299,7 +304,8 @@ class PropelTypes
     /**
      * Returns true if values for the type need to be quoted.
      *
-     * @param  string  $type The Propel type to check.
+     * @param string $type The Propel type to check.
+     *
      * @return boolean True if values for the type need to be quoted.
      */
     public static function isTextType($type)
@@ -310,7 +316,8 @@ class PropelTypes
     /**
      * Returns true if values for the type are numeric.
      *
-     * @param  string  $type The Propel type to check.
+     * @param string $type The Propel type to check.
+     *
      * @return boolean True if values for the type need to be quoted.
      */
     public static function isNumericType($type)
@@ -321,7 +328,8 @@ class PropelTypes
     /**
      * Returns true if values for the type are boolean.
      *
-     * @param  string  $type The Propel type to check.
+     * @param string $type The Propel type to check.
+     *
      * @return boolean True if values for the type need to be quoted.
      */
     public static function isBooleanType($type)
@@ -331,7 +339,9 @@ class PropelTypes
 
     /**
      * Returns true if type is a LOB type (i.e. would be handled by Blob/Clob class).
-     * @param  string  $type Propel type to check.
+     *
+     * @param string $type Propel type to check.
+     *
      * @return boolean
      */
     public static function isLobType($type)
@@ -342,7 +352,8 @@ class PropelTypes
     /**
      * Convenience method to indicate whether a passed-in PHP type is a primitive.
      *
-     * @param  string  $phpType The PHP type to check
+     * @param string $phpType The PHP type to check
+     *
      * @return boolean Whether the PHP type is a primitive (string, int, boolean, float)
      */
     public static function isPhpPrimitiveType($phpType)
@@ -353,7 +364,8 @@ class PropelTypes
     /**
      * Convenience method to indicate whether a passed-in PHP type is a numeric primitive.
      *
-     * @param  string  $phpType The PHP type to check
+     * @param string $phpType The PHP type to check
+     *
      * @return boolean Whether the PHP type is a primitive (string, int, boolean, float)
      */
     public static function isPhpPrimitiveNumericType($phpType)
@@ -364,7 +376,8 @@ class PropelTypes
     /**
      * Convenience method to indicate whether a passed-in PHP type is an object.
      *
-     * @param  string  $phpType The PHP type to check
+     * @param string $phpType The PHP type to check
+     *
      * @return boolean
      */
     public static function isPhpObjectType($phpType)
@@ -375,7 +388,8 @@ class PropelTypes
     /**
      * Convenience method to indicate whether a passed-in PHP type is an array.
      *
-     * @param  string  $phpType The PHP type to check
+     * @param string $phpType The PHP type to check
+     *
      * @return boolean
      */
     public static function isPhpArrayType($phpType)

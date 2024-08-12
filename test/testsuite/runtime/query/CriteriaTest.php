@@ -34,7 +34,7 @@ class CriteriaTest extends BookstoreTestBase
      */
     private $savedAdapter;
 
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         $this->c = new Criteria();
@@ -42,7 +42,7 @@ class CriteriaTest extends BookstoreTestBase
         Propel::setDB(null, new DBSQLite());
     }
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         Propel::setDB(null, $this->savedAdapter);
         parent::tearDown();
@@ -510,6 +510,7 @@ class CriteriaTest extends BookstoreTestBase
 
     public function testAddRaw()
     {
+        $db = Propel::getDB();
         $c = new Criteria();
         $c->addSelectColumn('A.COL');
         $c->addAsColumn('foo', 'B.COL');
@@ -517,7 +518,7 @@ class CriteriaTest extends BookstoreTestBase
 
         $params = array();
         $result = BasePeer::createSelectSql($c, $params);
-        $expected = "SELECT A.COL, B.COL AS foo FROM A WHERE foo = :p1";
+        $expected = 'SELECT A.COL, B.COL AS '.$db->quoteIdentifier('foo').' FROM A WHERE foo = :p1';
         $this->assertEquals($expected, $result);
         $expected = array(
             array('table' => null, 'type' => PDO::PARAM_STR, 'value' => 123)
@@ -525,7 +526,7 @@ class CriteriaTest extends BookstoreTestBase
         $this->assertEquals($expected, $params);
     }
 
-    public function testJoinObject ()
+    public function testJoinObject()
     {
         $j = new Join('TABLE_A.COL_1', 'TABLE_B.COL_2');
         $this->assertEquals('INNER JOIN', $j->getJoinType());
@@ -558,7 +559,7 @@ class CriteriaTest extends BookstoreTestBase
         $this->assertEquals('TABLE_B.COL_2', $j->getRightColumn(1));
     }
 
-    public function testAddStraightJoin ()
+    public function testAddStraightJoin()
     {
         $c = new Criteria();
         $c->addSelectColumn("*");
@@ -575,7 +576,7 @@ class CriteriaTest extends BookstoreTestBase
         $this->assertEquals($expect, $result);
     }
 
-    public function testAddSeveralJoins ()
+    public function testAddSeveralJoins()
     {
         $c = new Criteria();
         $c->addSelectColumn("*");
@@ -594,7 +595,7 @@ class CriteriaTest extends BookstoreTestBase
         $this->assertEquals($expect, $result);
     }
 
-    public function testAddLeftJoin ()
+    public function testAddLeftJoin()
     {
         $c = new Criteria();
         $c->addSelectColumn("TABLE_A.*");
@@ -612,7 +613,7 @@ class CriteriaTest extends BookstoreTestBase
         $this->assertEquals($expect, $result);
     }
 
-    public function testAddSeveralLeftJoins ()
+    public function testAddSeveralLeftJoins()
     {
         // Fails.. Suspect answer in the chunk starting at BasePeer:605
         $c = new Criteria();
@@ -633,7 +634,7 @@ class CriteriaTest extends BookstoreTestBase
         $this->assertEquals($expect, $result);
     }
 
-    public function testAddRightJoin ()
+    public function testAddRightJoin()
     {
         $c = new Criteria();
         $c->addSelectColumn("*");
@@ -650,7 +651,7 @@ class CriteriaTest extends BookstoreTestBase
         $this->assertEquals($expect, $result);
     }
 
-    public function testAddSeveralRightJoins ()
+    public function testAddSeveralRightJoins()
     {
         // Fails.. Suspect answer in the chunk starting at BasePeer:605
         $c = new Criteria();
@@ -671,7 +672,7 @@ class CriteriaTest extends BookstoreTestBase
         $this->assertEquals($expect, $result);
     }
 
-    public function testAddInnerJoin ()
+    public function testAddInnerJoin()
     {
         $c = new Criteria();
         $c->addSelectColumn("*");
@@ -688,7 +689,7 @@ class CriteriaTest extends BookstoreTestBase
         $this->assertEquals($expect, $result);
     }
 
-    public function testAddSeveralInnerJoin ()
+    public function testAddSeveralInnerJoin()
     {
         $c = new Criteria();
         $c->addSelectColumn("*");
@@ -727,7 +728,7 @@ class CriteriaTest extends BookstoreTestBase
     }
 
     /**
-     * @link       http://propel.phpdb.org/trac/ticket/606
+     * @link       http://trac.propelorm.org/ticket/606
      */
     public function testAddJoinArray()
     {
@@ -743,7 +744,7 @@ class CriteriaTest extends BookstoreTestBase
     }
 
     /**
-     * @link       http://propel.phpdb.org/trac/ticket/606
+     * @link       http://trac.propelorm.org/ticket/606
      */
     public function testAddJoinArrayMultiple()
     {
@@ -764,7 +765,7 @@ class CriteriaTest extends BookstoreTestBase
     /**
      * Test the Criteria::addJoinMultiple() method with an implicit join
      *
-     * @link       http://propel.phpdb.org/trac/ticket/606
+     * @link       http://trac.propelorm.org/ticket/606
      */
     public function testAddJoinMultiple()
     {
@@ -786,7 +787,7 @@ class CriteriaTest extends BookstoreTestBase
     /**
      * Test the Criteria::addJoinMultiple() method with a value as second argument
      *
-     * @link       http://propel.phpdb.org/trac/ticket/606
+     * @link       http://trac.propelorm.org/ticket/606
      */
     public function testAddJoinMultipleValue()
     {
@@ -799,16 +800,26 @@ class CriteriaTest extends BookstoreTestBase
                 addSelectColumn("TABLE_A.id");
 
         $expect = 'SELECT TABLE_A.id FROM TABLE_A INNER JOIN TABLE_B '
-            . 'ON (TABLE_A.FOO_ID=TABLE_B.id AND TABLE_A.BAR=3)';
+            . 'ON (TABLE_A.FOO_ID=TABLE_B.id AND TABLE_A.BAR=:p1)';
         $params = array();
         $result = BasePeer::createSelectSql($c, $params);
         $this->assertEquals($expect, $result);
+
+        $con = Propel::getConnection(BookPeer::DATABASE_NAME);
+        $c = new Criteria();
+        $c->addMultipleJoin(array(
+                array(AuthorPeer::ID, BookPeer::AUTHOR_ID),
+                array(BookPeer::ISBN, 3)
+            ));
+        AuthorPeer::doSelectOne($c, $con);
+        $expectedSQL = 'SELECT author.id, author.first_name, author.last_name, author.email, author.age FROM author INNER JOIN book ON (author.id=book.author_id AND book.isbn=3) LIMIT 1';
+        $this->assertEquals($expectedSQL, $con->getLastExecutedQuery());
     }
 
     /**
      * Test the Criteria::addJoinMultiple() method with a joinType
      *
-     * @link       http://propel.phpdb.org/trac/ticket/606
+     * @link       http://trac.propelorm.org/ticket/606
      */
     public function testAddJoinMultipleWithJoinType()
     {
@@ -831,7 +842,7 @@ class CriteriaTest extends BookstoreTestBase
     /**
      * Test the Criteria::addJoinMultiple() method with operator
      *
-     * @link       http://propel.phpdb.org/trac/ticket/606
+     * @link       http://trac.propelorm.org/ticket/606
      */
     public function testAddJoinMultipleWithOperator()
     {
@@ -853,7 +864,7 @@ class CriteriaTest extends BookstoreTestBase
     /**
      * Test the Criteria::addJoinMultiple() method with join type and operator
      *
-     * @link       http://propel.phpdb.org/trac/ticket/606
+     * @link       http://trac.propelorm.org/ticket/606
      */
     public function testAddJoinMultipleWithJoinTypeAndOperator()
     {
@@ -873,9 +884,35 @@ class CriteriaTest extends BookstoreTestBase
         $this->assertEquals($expect, $result);
     }
 
+    public function testAddJoinMultipleWithInOperator()
+    {
+        $con = Propel::getConnection(BookPeer::DATABASE_NAME);
+        $c = new Criteria();
+        $c->addMultipleJoin(array(
+                array(AuthorPeer::ID, BookPeer::AUTHOR_ID),
+                array(BookPeer::ISBN, array(1, 7, 42), Criteria::IN)
+            ), Criteria::LEFT_JOIN);
+        AuthorPeer::doSelectOne($c, $con);
+        $expectedSQL = 'SELECT author.id, author.first_name, author.last_name, author.email, author.age FROM author LEFT JOIN book ON (author.id=book.author_id AND book.isbn IN (1,7,42)) LIMIT 1';
+        $this->assertEquals($expectedSQL, $con->getLastExecutedQuery());
+    }
+
+    public function testAddJoinMultipleWithNotInOperator()
+    {
+        $con = Propel::getConnection(BookPeer::DATABASE_NAME);
+        $c = new Criteria();
+        $c->addMultipleJoin(array(
+                array(AuthorPeer::ID, BookPeer::AUTHOR_ID),
+                array(BookPeer::ISBN, array(1, 7, 42), Criteria::NOT_IN)
+            ), Criteria::LEFT_JOIN);
+        AuthorPeer::doSelectOne($c, $con);
+        $expectedSQL = 'SELECT author.id, author.first_name, author.last_name, author.email, author.age FROM author LEFT JOIN book ON (author.id=book.author_id AND book.isbn NOT IN (1,7,42)) LIMIT 1';
+        $this->assertEquals($expectedSQL, $con->getLastExecutedQuery());
+    }
+
     /**
      * Tests adding duplicate joins.
-     * @link       http://propel.phpdb.org/trac/ticket/613
+     * @link       http://trac.propelorm.org/ticket/613
      */
     public function testAddJoin_Duplicate()
     {
@@ -883,7 +920,7 @@ class CriteriaTest extends BookstoreTestBase
 
         $c->addJoin("tbl.COL1", "tbl.COL2", Criteria::LEFT_JOIN);
         $c->addJoin("tbl.COL1", "tbl.COL2", Criteria::LEFT_JOIN);
-        $this->assertEquals(1, count($c->getJoins()), "Expected not to have duplciate LJOIN added.");
+        $this->assertEquals(1, count($c->getJoins()), "Expected not to have duplicate LEFT JOIN added.");
 
         $c->addJoin("tbl.COL1", "tbl.COL2", Criteria::RIGHT_JOIN);
         $c->addJoin("tbl.COL1", "tbl.COL2", Criteria::RIGHT_JOIN);
@@ -893,13 +930,17 @@ class CriteriaTest extends BookstoreTestBase
         $c->addJoin("tbl.COL1", "tbl.COL2");
         $this->assertEquals(3, count($c->getJoins()), "Expected 1 new implicit join to be added.");
 
+        $c->addJoin("tbl.COL1", "tbl.COL2", Criteria::INNER_JOIN);
+        $this->assertEquals(3, count($c->getJoins()), "Expected to not add any new join
+                                                        as INNER JOIN is default joinType and it is already added");
+
         $c->addJoin("tbl.COL3", "tbl.COL4");
         $this->assertEquals(4, count($c->getJoins()), "Expected new col join to be added.");
 
     }
 
     /**
-     * @link       http://propel.phpdb.org/trac/ticket/634
+     * @link       http://trac.propelorm.org/ticket/634
      */
     public function testHasSelectClause()
     {
@@ -916,7 +957,7 @@ class CriteriaTest extends BookstoreTestBase
 
     /**
      * Tests including aliases in criterion objects.
-     * @link       http://propel.phpdb.org/trac/ticket/636
+     * @link       http://trac.propelorm.org/ticket/636
      */
     public function testAliasInCriterion()
     {
@@ -927,31 +968,44 @@ class CriteriaTest extends BookstoreTestBase
         $this->assertEquals("column_alias", $crit->getColumn());
     }
 
+    public function testQuotingAlias()
+    {
+        $db = Propel::getDB();
+        $c = new Criteria();
+        $c->addSelectColumn(BookPeer::TITLE);
+        $c->addAsColumn('Book ISBN', BookPeer::ISBN);
+        $expected = 'SELECT book.title, book.isbn AS '.$db->quoteIdentifier('Book ISBN').' FROM book';
+        $params = array();
+        $result = BasePeer::createSelectSql($c, $params);
+        $this->assertEquals($expected, $result);
+        // Below is to ensure we test with adapter which quotes identifiers
+        $this->assertNotEquals('Book ISBN', $db->quoteIdentifier('Book ISBN'));
+    }
+
     public function testHaving()
     {
+        $db = Propel::getDB();
         $c = new Criteria();
         $c->addSelectColumn(BookPeer::TITLE);
         $c->addAsColumn('isb_n', BookPeer::ISBN);
         $crit = $c->getNewCriterion('isb_n', '1234567890123');
         $c->addHaving($crit);
-        $expected = 'SELECT book.title, book.isbn AS isb_n FROM book HAVING isb_n=:p1';
+        $expected = 'SELECT book.title, book.isbn AS '.$db->quoteIdentifier('isb_n').' FROM book HAVING isb_n=:p1';
         $params = array();
         $result = BasePeer::createSelectSql($c, $params);
         $this->assertEquals($expected, $result);
-        BasePEer::doSelect($c, $this->con);
-        $expected = 'SELECT book.title, book.isbn AS isb_n FROM book HAVING isb_n=\'1234567890123\'';
-        $this->assertEquals($expected, $this->con->getLastExecutedQuery());
     }
 
     public function testMultipleHaving()
     {
+        $db = Propel::getDB();
         $c = new Criteria();
         $c->addSelectColumn(BookPeer::TITLE);
         $c->addAsColumn('isb_n', BookPeer::ISBN);
         $crit = $c->getNewCriterion('isb_n', '1234567890123');
         $crit->addAnd($c->getNewCriterion(BookPeer::TITLE, 'Foobar'));
         $c->addHaving($crit);
-        $expected = 'SELECT book.title, book.isbn AS isb_n FROM book HAVING (isb_n=:p1 AND book.title=:p2)';
+        $expected = 'SELECT book.title, book.isbn AS '.$db->quoteIdentifier('isb_n').' FROM book HAVING (isb_n=:p1 AND book.title=:p2)';
         $params = array();
         $result = BasePeer::createSelectSql($c, $params);
         $this->assertEquals($expected, $result);
@@ -959,22 +1013,20 @@ class CriteriaTest extends BookstoreTestBase
 
     public function testHavingRaw()
     {
+        $db = Propel::getDB();
         $c = new Criteria();
         $c->addSelectColumn(BookPeer::TITLE);
         $c->addAsColumn("isb_n", BookPeer::ISBN);
         $c->addHaving('isb_n = ?', '1234567890123', PDO::PARAM_STR);
-        $expected = 'SELECT book.title, book.isbn AS isb_n FROM book HAVING isb_n = :p1';
+        $expected = 'SELECT book.title, book.isbn AS '.$db->quoteIdentifier('isb_n').' FROM book HAVING isb_n = :p1';
         $params = array();
         $result = BasePeer::createSelectSql($c, $params);
         $this->assertEquals($expected, $result);
-        BasePEer::doSelect($c, $this->con);
-        $expected = 'SELECT book.title, book.isbn AS isb_n FROM book HAVING isb_n = \'1234567890123\'';
-        $this->assertEquals($expected, $this->con->getLastExecutedQuery());
     }
 
     /**
      * Test whether GROUP BY is being respected in equals() check.
-     * @link       http://propel.phpdb.org/trac/ticket/674
+     * @link       http://trac.propelorm.org/ticket/674
      */
     public function testEqualsGroupBy()
     {
@@ -995,7 +1047,7 @@ class CriteriaTest extends BookstoreTestBase
 
     /**
      * Test whether calling setDistinct twice puts in two distinct keywords or not.
-     * @link       http://propel.phpdb.org/trac/ticket/716
+     * @link       http://trac.propelorm.org/ticket/716
      */
     public function testDoubleSelectModifiers()
     {
@@ -1102,14 +1154,158 @@ class CriteriaTest extends BookstoreTestBase
         $this->assertFalse($c->getUseTransaction(), 'useTransaction is false by default');
     }
 
-    public function testLimit()
+    public function testDefaultLimit()
     {
         $c = new Criteria();
         $this->assertEquals(0, $c->getLimit(), 'Limit is 0 by default');
+    }
 
-        $c2 = $c->setLimit(1);
-        $this->assertEquals(1, $c->getLimit(), 'Limit is set by setLimit');
+    /**
+     * @dataProvider dataLimit
+     */
+    public function testLimit($limit, $expected)
+    {
+        $c = new Criteria();
+        $c2 = $c->setLimit($limit);
+
+        $this->assertSame($expected, $c->getLimit(), 'Correct limit is set by setLimit()');
         $this->assertSame($c, $c2, 'setLimit() returns the current Criteria');
+    }
+
+    public function dataLimit()
+    {
+        return array(
+            'Negative value' => array(
+                'limit'    => -1,
+                'expected' => -1
+            ),
+            'Zero' => array(
+                'limit'    => 0,
+                'expected' => 0
+            ),
+
+            'Small integer' => array(
+                'limit'    => 38427,
+                'expected' => 38427
+            ),
+            'Small integer as a string' => array(
+                'limit'    => '38427',
+                'expected' => 38427
+            ),
+
+            'Largest 32-bit integer' => array(
+                'limit'    => 2147483647,
+                'expected' => 2147483647
+            ),
+            'Largest 32-bit integer as a string' => array(
+                'limit'    => '2147483647',
+                'expected' => 2147483647
+            ),
+
+            'Largest 64-bit integer' => array(
+                'limit'    => 9223372036854775807,
+                'expected' => 9223372036854775807
+            ),
+            'Largest 64-bit integer as a string' => array(
+                'limit'    => '9223372036854775807',
+                'expected' => 9223372036854775807
+            ),
+
+            'Decimal value' => array(
+                'limit'    => 123.9,
+                'expected' => 123
+            ),
+            'Decimal value as a string' => array(
+                'limit'    => '123.9',
+                'expected' => 123
+            ),
+
+            'Non-numeric string' => array(
+                'limit'    => 'foo',
+                'expected' => 0
+            ),
+            'Injected SQL' => array(
+                'limit'    => '3;DROP TABLE abc',
+                'expected' => 3
+            ),
+        );
+    }
+
+    public function testDefaultOffset()
+    {
+        $c = new Criteria();
+        $this->assertEquals(0, $c->getOffset(), 'Offset is 0 by default');
+    }
+
+    /**
+     * @dataProvider dataOffset
+     */
+    public function testOffset($offset, $expected)
+    {
+        $c = new Criteria();
+        $c2 = $c->setOffset($offset);
+
+        $this->assertSame($expected, $c->getOffset(), 'Correct offset is set by setOffset()');
+        $this->assertSame($c, $c2, 'setOffset() returns the current Criteria');
+    }
+
+    public function dataOffset()
+    {
+        return array(
+            'Negative value' => array(
+                'offset'   => -1,
+                'expected' => -1
+            ),
+            'Zero' => array(
+                'offset'   => 0,
+                'expected' => 0
+            ),
+
+            'Small integer' => array(
+                'offset'   => 38427,
+                'expected' => 38427
+            ),
+            'Small integer as a string' => array(
+                'offset'   => '38427',
+                'expected' => 38427
+            ),
+
+            'Largest 32-bit integer' => array(
+                'offset'   => 2147483647,
+                'expected' => 2147483647
+            ),
+            'Largest 32-bit integer as a string' => array(
+                'offset'   => '2147483647',
+                'expected' => 2147483647
+            ),
+
+            'Largest 64-bit integer' => array(
+                'offset'   => 9223372036854775807,
+                'expected' => 9223372036854775807
+            ),
+            'Largest 64-bit integer as a string' => array(
+                'offset'   => '9223372036854775807',
+                'expected' => 9223372036854775807
+            ),
+
+            'Decimal value' => array(
+                'offset'   => 123.9,
+                'expected' => 123
+            ),
+            'Decimal value as a string' => array(
+                'offset'   => '123.9',
+                'expected' => 123
+            ),
+
+            'Non-numeric string' => array(
+                'offset'   => 'foo',
+                'expected' => 0
+            ),
+            'Injected SQL' => array(
+                'offset'   => '3;DROP TABLE abc',
+                'expected' => 3
+            ),
+        );
     }
 
     public function testDistinct()

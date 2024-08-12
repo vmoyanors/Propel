@@ -8,7 +8,6 @@
  * @license    MIT License
  */
 
-require_once dirname(__FILE__) . '/DefaultPlatform.php';
 
 /**
  * MySql PropelPlatformInterface implementation.
@@ -125,6 +124,7 @@ class MysqlPlatform extends DefaultPlatform
         } else {
             $mysqlTableType = $this->getDefaultTableEngine();
         }
+
         return strtolower($mysqlTableType) == 'innodb';
     }
 
@@ -160,6 +160,7 @@ SET FOREIGN_KEY_CHECKS = 1;
 
     /**
      * Returns the SQL for the primary key of a Table object
+     *
      * @return string
      */
     public function getPrimaryKeyDDL(Table $table)
@@ -172,9 +173,9 @@ SET FOREIGN_KEY_CHECKS = 1;
             //if the primary key consists of multiple columns and if the first is not the autoIncrement one. So
             //this push the autoIncrement column to the first position if its not already.
             $autoIncrement = $table->getAutoIncrementPrimaryKey();
-            if ($autoIncrement && $keys[0] != $autoIncrement){
+            if ($autoIncrement && $keys[0] != $autoIncrement) {
                 $idx = array_search($autoIncrement, $keys);
-                if ($idx !== false){
+                if ($idx !== false) {
                     unset($keys[$idx]);
                     array_unshift($keys, $autoIncrement);
                 }
@@ -231,7 +232,7 @@ SET FOREIGN_KEY_CHECKS = 1;
         }
 
         $tableOptions = $tableOptions ? ' ' . implode(' ', $tableOptions) : '';
-        $sep          = ",
+        $sep = ",
     ";
 
         $pattern = "
@@ -252,9 +253,9 @@ CREATE TABLE %s
 
     protected function getTableOptions(Table $table)
     {
-        $dbVI         = $table->getDatabase()->getVendorInfoForType('mysql');
-        $tableVI      = $table->getVendorInfoForType('mysql');
-        $vi           = $dbVI->getMergedVendorInfo($tableVI);
+        $dbVI = $table->getDatabase()->getVendorInfoForType('mysql');
+        $tableVI = $table->getVendorInfoForType('mysql');
+        $vi = $dbVI->getMergedVendorInfo($tableVI);
         $tableOptions = array();
         // List of supported table options
         // see http://dev.mysql.com/doc/refman/5.5/en/create-table.html
@@ -305,13 +306,13 @@ DROP TABLE IF EXISTS " . $this->quoteIdentifier($table->getName()) . ";
 
     public function getColumnDDL(Column $col)
     {
-        $domain         = $col->getDomain();
-        $sqlType        = $domain->getSqlType();
-        $notNullString  = $this->getNullString($col->isNotNull());
+        $domain = $col->getDomain();
+        $sqlType = $domain->getSqlType();
+        $notNullString = $this->getNullString($col->isNotNull());
         $defaultSetting = $this->getColumnDefaultValueDDL($col);
 
         // Special handling of TIMESTAMP/DATETIME types ...
-        // See: http://propel.phpdb.org/trac/ticket/538
+        // See: http://trac.propelorm.org/ticket/538
         if ($sqlType == 'DATETIME') {
             $def = $domain->getDefaultValue();
             if ($def && $def->isExpression()) { // DATETIME values can only have constant expressions
@@ -378,7 +379,9 @@ DROP TABLE IF EXISTS " . $this->quoteIdentifier($table->getName()) . ";
      * Creates a comma-separated list of column names for the index.
      * For MySQL unique indexes there is the option of specifying size, so we cannot simply use
      * the getColumnsList() method.
-     * @param  Index  $index
+     *
+     * @param Index $index
+     *
      * @return string
      */
     protected function getIndexColumnListDDL(Index $index)
@@ -394,7 +397,8 @@ DROP TABLE IF EXISTS " . $this->quoteIdentifier($table->getName()) . ";
     /**
      * Builds the DDL SQL to drop the primary key of a table.
      *
-     * @param  Table  $table
+     * @param Table $table
+     *
      * @return string
      */
     public function getDropPrimaryKeyDDL(Table $table)
@@ -411,7 +415,8 @@ ALTER TABLE %s DROP PRIMARY KEY;
     /**
      * Builds the DDL SQL to add an Index.
      *
-     * @param  Index  $index
+     * @param Index $index
+     *
      * @return string
      */
     public function getAddIndexDDL(Index $index)
@@ -431,7 +436,8 @@ CREATE %sINDEX %s ON %s (%s);
     /**
      * Builds the DDL SQL to drop an Index.
      *
-     * @param  Index  $index
+     * @param Index $index
+     *
      * @return string
      */
     public function getDropIndexDDL(Index $index)
@@ -448,6 +454,7 @@ DROP INDEX %s ON %s;
 
     /**
      * Builds the DDL SQL for an Index object.
+     *
      * @return string
      */
     public function getIndexDDL(Index $index)
@@ -461,7 +468,7 @@ DROP INDEX %s ON %s;
 
     protected function getIndexType(Index $index)
     {
-        $type       = '';
+        $type = '';
         $vendorInfo = $index->getVendorInfoForType($this->getDatabaseType());
         if ($vendorInfo && $vendorInfo->getParameter('Index_type')) {
             $type = $vendorInfo->getParameter('Index_type') . ' ';
@@ -480,18 +487,18 @@ DROP INDEX %s ON %s;
         );
     }
 
-
     public function getAddForeignKeyDDL(ForeignKey $fk)
     {
         if ($this->supportsForeignKeys($fk->getTable())) {
             return parent::getAddForeignKeyDDL($fk);
         }
+
         return '';
     }
 
-
     /**
      * Builds the DDL SQL for a ForeignKey object.
+     *
      * @return string
      */
     public function getForeignKeyDDL(ForeignKey $fk)
@@ -499,9 +506,9 @@ DROP INDEX %s ON %s;
         if ($this->supportsForeignKeys($fk->getTable())) {
             return parent::getForeignKeyDDL($fk);
         }
+
         return '';
     }
-
 
     public function getDropForeignKeyDDL(ForeignKey $fk)
     {
@@ -562,6 +569,7 @@ ALTER TABLE %s DROP FOREIGN KEY %s;
 
     /**
      * Builds the DDL SQL to rename a table
+     *
      * @return string
      */
     public function getRenameTableDDL($fromTableName, $toTableName)
@@ -595,6 +603,7 @@ ALTER TABLE %s DROP %s;
 
     /**
      * Builds the DDL SQL to rename a column
+     *
      * @return string
      */
     public function getRenameColumnDDL($fromColumn, $toColumn)
@@ -614,6 +623,7 @@ ALTER TABLE %s DROP %s;
 
     /**
      * Builds the DDL SQL to change a column
+     *
      * @return string
      */
     public function getChangeColumnDDL($fromColumn, $toColumn)
@@ -676,7 +686,7 @@ ALTER TABLE %s CHANGE %s %s;
      */
     public function getAddColumnsDDL($columns)
     {
-        $lines     = array();
+        $lines = array();
         $tableName = null;
         foreach ($columns as $column) {
             if (null === $tableName) {
@@ -709,14 +719,14 @@ ALTER TABLE %s
 
     public function hasSize($sqlType)
     {
-        return !("MEDIUMTEXT" == $sqlType || "LONGTEXT" == $sqlType
-            || "BLOB" == $sqlType || "MEDIUMBLOB" == $sqlType
-            || "LONGBLOB" == $sqlType);
+        return !("MEDIUMTEXT" == $sqlType || "LONGTEXT" == $sqlType || "BLOB" == $sqlType || "MEDIUMBLOB" == $sqlType || "LONGBLOB" == $sqlType);
     }
 
     /**
      * Escape the string for RDBMS.
-     * @param  string $text
+     *
+     * @param string $text
+     *
      * @return string
      */
     public function disconnectedEscapeText($text)
@@ -734,7 +744,8 @@ ALTER TABLE %s
      * should be safe to split the string by '.' and quote each part individually
      * to allow for a <schema>.<table> or <table>.<column> syntax.
      *
-     * @param  string $text the identifier
+     * @param string $text the identifier
+     *
      * @return string the quoted identifier
      */
     public function quoteIdentifier($text)
@@ -764,4 +775,13 @@ ALTER TABLE %s
         return parent::getColumnBindingPHP($column, $identifier, $columnValueAccessor, $tab);
     }
 
+    public function getDefaultFKOnDeleteBehavior()
+    {
+      return ForeignKey::RESTRICT;
+    }
+
+    public function getDefaultFKOnUpdateBehavior()
+    {
+      return ForeignKey::RESTRICT;
+    }
 }

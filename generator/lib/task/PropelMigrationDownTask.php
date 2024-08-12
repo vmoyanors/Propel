@@ -8,8 +8,7 @@
  * @license    MIT License
  */
 
-require_once dirname(__FILE__) . '/BasePropelMigrationTask.php';
-require_once dirname(__FILE__) . '/../util/PropelMigrationManager.php';
+
 
 /**
  * This Task executes the next migration down
@@ -36,10 +35,7 @@ class PropelMigrationDownTask extends BasePropelMigrationTask
 
             return false;
         }
-        $this->log(sprintf(
-            'Executing migration %s down',
-            $manager->getMigrationClassName($nextMigrationTimestamp)
-        ));
+        $this->log(sprintf('Executing migration %s down', $manager->getMigrationClassName($nextMigrationTimestamp)));
 
         if ($nbPreviousTimestamps = count($previousTimestamps)) {
             $previousTimestamp = array_pop($previousTimestamps);

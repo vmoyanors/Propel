@@ -8,7 +8,6 @@
  * @license    MIT License
  */
 
-require_once 'phing/parser/AbstractHandler.php';
 
 /**
  * A Class that is used to parse an data dump XML file and create SQL using a DataSQLBuilder class.
@@ -82,7 +81,7 @@ class XmlToDataSQL extends AbstractHandler
     public $parser;
 
     /**
-     * Flag for enabing debug output to aid in parser tracing.
+     * Flag for enabling debug output to aid in parser tracing.
      */
     const DEBUG = false;
 
@@ -108,6 +107,7 @@ class XmlToDataSQL extends AbstractHandler
      *
      * @param PhingFile $xmlFile
      * @param Writer    $out
+     *
      * @throws BuildException
      */
     public function transform(PhingFile $xmlFile, Writer $out)
@@ -160,7 +160,7 @@ class XmlToDataSQL extends AbstractHandler
                 $columnValues = array();
                 foreach ($attributes as $name => $value) {
                     $col = $table->getColumnByPhpName($name);
-                    $columnValues[] = new ColumnValue($col, iconv('utf-8',$this->encoding, $value));
+                    $columnValues[] = new ColumnValue($col, iconv('utf-8', $this->encoding, $value));
                 }
 
                 $data = new DataRow($table, $columnValues);
@@ -180,9 +180,7 @@ class XmlToDataSQL extends AbstractHandler
 
                 // Write the SQL
                 $this->sqlWriter->write($this->currBuilder->buildRowSql($data));
-
             }
-
         } catch (Exception $e) {
             // Exceptions have traditionally not bubbled up nicely from the expat parser,
             // so we also print the stack trace here.
@@ -210,11 +208,11 @@ class XmlToDataSQL extends AbstractHandler
             $this->sqlWriter->write(call_user_func(array($this->builderClazz, 'getDatabaseEndSql')));
         }
     }
-
 } // XmlToData
 
 /**
  * "inner class"
+ *
  * @package    propel.generator.builder.util
  */
 class DataRow
@@ -241,6 +239,7 @@ class DataRow
 
 /**
  * "inner" class
+ *
  * @package    propel.generator.builder.util
  */
 class ColumnValue

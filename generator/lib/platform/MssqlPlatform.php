@@ -8,8 +8,7 @@
  * @license    MIT License
  */
 
-require_once dirname(__FILE__) . '/DefaultPlatform.php';
-require_once dirname(__FILE__) . '/../model/Domain.php';
+
 
 /**
  * MS SQL PropelPlatformInterface implementation.
@@ -156,7 +155,7 @@ END
             $script .= ' ON UPDATE ' . $fk->getOnUpdate();
         }
         if ($fk->hasOnDelete() && $fk->getOnDelete() != ForeignKey::SETNULL) {
-            $script .= ' ON DELETE '.  $fk->getOnDelete();
+            $script .= ' ON DELETE ' . $fk->getOnDelete();
         }
 
         return $script;
@@ -184,5 +183,4 @@ END
     {
         return 'Y-m-d H:i:s';
     }
-
 }

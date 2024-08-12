@@ -8,8 +8,6 @@
  * @license    MIT License
  */
 
-require_once 'AggregateColumnRelationBehavior.php';
-
 /**
  * Keeps an aggregate column updated with related table
  *
@@ -56,7 +54,7 @@ class AggregateColumnRelationBehavior extends Behavior
 
         return $this->renderTemplate('objectUpdateRelated', array(
             'relationName'     => $relationName,
-            'variableName'     => self::lcfirst($relationName),
+            'variableName'     => lcfirst($relationName),
             'updateMethodName' => $this->getParameter('update_method'),
         ));
     }
@@ -128,7 +126,7 @@ class AggregateColumnRelationBehavior extends Behavior
         return $this->renderTemplate('queryFindRelated', array(
             'foreignTable'     => $this->getForeignTable(),
             'relationName'     => $relationName,
-            'variableName'     => self::lcfirst($relationName),
+            'variableName'     => lcfirst($relationName),
             'foreignQueryName' => $foreignQueryBuilder->getClassname(),
             'refRelationName'  => $builder->getRefFKPhpNameAffix($foreignKey),
         ));
@@ -140,7 +138,7 @@ class AggregateColumnRelationBehavior extends Behavior
 
         return $this->renderTemplate('queryUpdateRelated', array(
             'relationName'     => $relationName,
-            'variableName'     => self::lcfirst($relationName),
+            'variableName'     => lcfirst($relationName),
             'updateMethodName' => $this->getParameter('update_method'),
         ));
     }
@@ -155,6 +153,7 @@ class AggregateColumnRelationBehavior extends Behavior
         $foreignTable = $this->getForeignTable();
         // let's infer the relation from the foreign table
         $fks = $this->getTable()->getForeignKeysReferencingTable($foreignTable->getName());
+
         // FIXME doesn't work when more than one fk to the same table
         return array_shift($fks);
     }
@@ -162,13 +161,5 @@ class AggregateColumnRelationBehavior extends Behavior
     protected function getRelationName($builder)
     {
         return $builder->getFKPhpNameAffix($this->getForeignKey());
-    }
-
-    protected static function lcfirst($input)
-    {
-        // no lcfirst in php<5.3...
-        $input[0] = strtolower($input[0]);
-
-        return $input;
     }
 }

@@ -20,7 +20,7 @@ require_once dirname(__FILE__) . '/../../../tools/helpers/bookstore/BookstoreDat
  */
 class ModelCriteriaTest extends BookstoreTestBase
 {
-    protected function assertCriteriaTranslation($criteria, $expectedSql, $expectedParams, $message = '')
+    protected function assertCriteriaTranslation(Criteria $criteria, $expectedSql, $expectedParams, $message = '')
     {
         $params = array();
         $result = BasePeer::createSelectSql($criteria, $params);
@@ -92,13 +92,13 @@ class ModelCriteriaTest extends BookstoreTestBase
     /**
      * @dataProvider conditionsForTestReplaceNames
      */
-    public function testReplaceNames($origClause, $columnPhpName = false, $modifiedClause)
+    public function testReplaceNames($origClause, $columnPhpName, $modifiedClause)
     {
         $c = new TestableModelCriteria('bookstore', 'Book');
-        $this->doTestReplaceNames($c, BookPeer::getTableMap(), $origClause, $columnPhpName = false, $modifiedClause);
+        $this->doTestReplaceNames($c, BookPeer::getTableMap(), $origClause, $modifiedClause, $columnPhpName = false);
     }
 
-    public function doTestReplaceNames($c, $tableMap, $origClause, $columnPhpName = false, $modifiedClause)
+    public function doTestReplaceNames($c, $tableMap, $origClause, $modifiedClause, $columnPhpName = false)
     {
         $c->replaceNames($origClause);
         $columns = $c->replacedColumns;
@@ -143,7 +143,7 @@ class ModelCriteriaTest extends BookstoreTestBase
         $params = array(
             array('table' => 'book', 'column' => 'title', 'value' => 'foo'),
         );
-        $this->assertCriteriaTranslation($c, $sql, $params, 'setModelAlias() allows the definition of the alias after constrution');
+        $this->assertCriteriaTranslation($c, $sql, $params, 'setModelAlias() allows the definition of the alias after construction');
 
         $c = new ModelCriteria('bookstore', 'Book', 'b');
         $c->where('b.Title = ?', 'foo');
@@ -168,7 +168,7 @@ class ModelCriteriaTest extends BookstoreTestBase
             array('table' => 'book', 'column' => 'title', 'value' => 'foo'),
             array('table' => 'author', 'column' => 'first_name', 'value' => 'john'),
         );
-        $this->assertCriteriaTranslation($c, $sql, $params, 'setModelAlias() allows the definition of a true SQL alias after constrution');
+        $this->assertCriteriaTranslation($c, $sql, $params, 'setModelAlias() allows the definition of a true SQL alias after construction');
     }
 
     public function testCondition()
@@ -194,7 +194,7 @@ class ModelCriteriaTest extends BookstoreTestBase
         $c->condition('cond2', 'title_start like ?', '%bar%', PDO::PARAM_STR);
         $c->combine(array('cond1', 'cond2'), 'or');
 
-        $sql = "SELECT book.id, book.title, book.isbn, book.price, book.publisher_id, book.author_id, SUBSTRING(book.title, 1, 4) AS title_start FROM `book` WHERE (book.title <> :p1 OR title_start like :p2)";
+        $sql = "SELECT book.id, book.title, book.isbn, book.price, book.publisher_id, book.author_id, SUBSTRING(book.title, 1, 4) AS `title_start` FROM `book` WHERE (book.title <> :p1 OR title_start like :p2)";
         $params = array(
             array('table' => 'book', 'column' => 'title', 'value' => 'foo'),
             array('table' => null, 'type' => PDO::PARAM_STR, 'value' => '%bar%'),
@@ -326,7 +326,7 @@ class ModelCriteriaTest extends BookstoreTestBase
         );
         $this->assertCriteriaTranslation($c, $sql, $params, 'where() accepts a complex calculation');
         $c->find($this->con);
-        $expected = "SELECT book.id, book.title, book.isbn, book.price, book.publisher_id, book.author_id FROM `book` WHERE LOCATE('foo', book.title) = true";
+        $expected = "SELECT book.id, book.title, book.isbn, book.price, book.publisher_id, book.author_id FROM `book` WHERE LOCATE('foo', book.title) = 1";
         $this->assertEquals($expected, $this->con->getLastExecutedQuery());
     }
 
@@ -403,7 +403,7 @@ class ModelCriteriaTest extends BookstoreTestBase
         $params =  array(
             array('table' => 'book', 'column' => 'title', 'value' => 'foo'),
         );
-        $this->assertCriteriaTranslation($c, $sql, $params, 'filterBy() accepts a sicustom comparator');
+        $this->assertCriteriaTranslation($c, $sql, $params, 'filterBy() accepts a custom comparator');
 
         $c = new ModelCriteria('bookstore', 'Book', 'b');
         $c->filterBy('Title', 'foo');
@@ -456,13 +456,13 @@ class ModelCriteriaTest extends BookstoreTestBase
         $c->withColumn('SUBSTRING(Book.Title, 1, 4)', 'title_start');
         $c->having('title_start = ?', 'foo', PDO::PARAM_STR);
 
-        $sql = 'SELECT book.id, book.title, book.isbn, book.price, book.publisher_id, book.author_id, SUBSTRING(book.title, 1, 4) AS title_start FROM `book` HAVING title_start = :p1';
+        $sql = 'SELECT book.id, book.title, book.isbn, book.price, book.publisher_id, book.author_id, SUBSTRING(book.title, 1, 4) AS `title_start` FROM `book` HAVING title_start = :p1';
         $params = array(
             array('table' => null, 'type' => 2, 'value' => 'foo'),
         );
         $this->assertCriteriaTranslation($c, $sql, $params, 'having() accepts a string clause');
         $c->find($this->con);
-        $expected = 'SELECT book.id, book.title, book.isbn, book.price, book.publisher_id, book.author_id, SUBSTRING(book.title, 1, 4) AS title_start FROM `book` HAVING title_start = \'foo\'';
+        $expected = 'SELECT book.id, book.title, book.isbn, book.price, book.publisher_id, book.author_id, SUBSTRING(book.title, 1, 4) AS `title_start` FROM `book` HAVING title_start = \'foo\'';
         $this->assertEquals($expected, $this->con->getLastExecutedQuery());
     }
 
@@ -513,7 +513,7 @@ class ModelCriteriaTest extends BookstoreTestBase
         $c->addAsColumn('t', BookPeer::TITLE);
         $c->orderBy('t');
 
-        $sql = 'SELECT book.title AS t FROM  ORDER BY t ASC';
+        $sql = 'SELECT book.title AS `t` FROM  ORDER BY t ASC';
         $params = array();
         $this->assertCriteriaTranslation($c, $sql, $params, 'orderBy() accepts a column alias and adds an ORDER BY clause');
     }
@@ -552,7 +552,7 @@ class ModelCriteriaTest extends BookstoreTestBase
         $c->addAsColumn('t', BookPeer::TITLE);
         $c->groupBy('t');
 
-        $sql = 'SELECT book.title AS t FROM  GROUP BY t';
+        $sql = 'SELECT book.title AS `t` FROM  GROUP BY t';
         $params = array();
         $this->assertCriteriaTranslation($c, $sql, $params, 'groupBy() accepts a column alias and adds a GROUP BY clause');
     }
@@ -562,6 +562,7 @@ class ModelCriteriaTest extends BookstoreTestBase
      */
     public function testGroupByClassThrowsExceptionOnUnknownClass()
     {
+        $this->expectException(PropelException::class);
         $c = new ModelCriteria('bookstore', 'Book');
         $c->groupByClass('Author');
     }
@@ -905,6 +906,29 @@ class ModelCriteriaTest extends BookstoreTestBase
         $this->assertEquals($expectedSQL, $con->getLastExecutedQuery(), 'join() allows the use of relation alias in further joins()');
     }
 
+    public function testJoinDuplicate()
+    {
+        $c = new ModelCriteria('bookstore', 'Author');
+        $c->addJoinObject(new Join('tbl.COL1', 'tbl.COL2', 'LEFT JOIN'));
+        $c->addJoinObject(new Join('tbl.COL1', 'tbl.COL2', 'LEFT JOIN'));
+        $this->assertEquals(1, count($c->getJoins()), 'Expected not to have duplicate LEFT JOIN added.');
+
+        $c->addJoinObject(new Join('tbl.COL1', 'tbl.COL2', 'RIGHT JOIN'));
+        $c->addJoinObject(new Join('tbl.COL1', 'tbl.COL2', 'RIGHT JOIN'));
+        $this->assertEquals(2, count($c->getJoins()), 'Expected 1 new right join to be added.');
+
+        $c->addJoinObject(new Join('tbl.COL1', 'tbl.COL2'));
+        $c->addJoinObject(new Join('tbl.COL1', 'tbl.COL2'));
+        $this->assertEquals(3, count($c->getJoins()), 'Expected 1 new implicit join to be added.');
+
+        $c->addJoinObject(new Join('tbl.COL1', 'tbl.COL2', 'INNER JOIN'));
+        $this->assertEquals(3, count($c->getJoins()), 'Expected to not add any new join
+                                                        as INNER JOIN is default joinType and it is already added');
+
+        $c->addJoinObject(new Join('tbl.COL3', 'tbl.COL4'));
+        $this->assertEquals(4, count($c->getJoins()), "Expected new col join to be added.");
+     }
+
     public function testAddJoinConditionSimple()
     {
         $con = Propel::getConnection(BookPeer::DATABASE_NAME);
@@ -913,6 +937,30 @@ class ModelCriteriaTest extends BookstoreTestBase
         $c->addJoinCondition('Author', 'Book.Title IS NOT NULL');
         $books = BookPeer::doSelect($c, $con);
         $expectedSQL = "SELECT book.id, book.title, book.isbn, book.price, book.publisher_id, book.author_id FROM `book` INNER JOIN `author` ON (book.author_id=author.id AND book.title IS NOT NULL)";
+        $this->assertEquals($expectedSQL, $con->getLastExecutedQuery(), 'addJoinCondition() allows the use of custom conditions');
+    }
+
+    public function testAddJoinConditionWithInOperator()
+    {
+        $con = Propel::getConnection(BookPeer::DATABASE_NAME);
+        $c = new ModelCriteria('bookstore', 'Author');
+        $c->join('Author.Book', Criteria::LEFT_JOIN);
+        $c->addJoinCondition('Book', 'Book.isbn IN ?', array(1, 7, 42));
+        $c->limit(1);
+        $books = AuthorPeer::doSelect($c, $con);
+        $expectedSQL = "SELECT author.id, author.first_name, author.last_name, author.email, author.age FROM `author` LEFT JOIN `book` ON (author.id=book.author_id AND book.isbn IN (1,7,42)) LIMIT 1";
+        $this->assertEquals($expectedSQL, $con->getLastExecutedQuery(), 'addJoinCondition() allows the use of custom conditions');
+    }
+
+    public function testAddJoinConditionWithNotInOperator()
+    {
+        $con = Propel::getConnection(BookPeer::DATABASE_NAME);
+        $c = new ModelCriteria('bookstore', 'Author');
+        $c->join('Author.Book', Criteria::LEFT_JOIN);
+        $c->addJoinCondition('Book', 'Book.isbn NOT IN ?', array(1, 7, 42));
+        $c->limit(1);
+        $books = AuthorPeer::doSelect($c, $con);
+        $expectedSQL = "SELECT author.id, author.first_name, author.last_name, author.email, author.age FROM `author` LEFT JOIN `book` ON (author.id=book.author_id AND book.isbn NOT IN (1,7,42)) LIMIT 1";
         $this->assertEquals($expectedSQL, $con->getLastExecutedQuery(), 'addJoinCondition() allows the use of custom conditions');
     }
 
@@ -1021,6 +1069,7 @@ class ModelCriteriaTest extends BookstoreTestBase
      */
     public function testWithThrowsExceptionWhenJoinLacks()
     {
+        $this->expectException(PropelException::class);
         $c = new ModelCriteria('bookstore', 'Book');
         $c->with('Author');
     }
@@ -1039,6 +1088,7 @@ class ModelCriteriaTest extends BookstoreTestBase
      */
     public function testWithThrowsExceptionWhenNotUsingAlias()
     {
+        $this->expectException(PropelException::class);
         $c = new ModelCriteria('bookstore', 'Book');
         $c->join('Book.Author a');
         $c->with('Author');
@@ -1272,10 +1322,10 @@ class ModelCriteriaTest extends BookstoreTestBase
     public static function conditionsForTestWithColumn()
     {
         return array(
-            array('Book.Title', 'BookTitle', 'book.title AS BookTitle'),
-            array('Book.Title', null, 'book.title AS BookTitle'),
-            array('UPPER(Book.Title)', null, 'UPPER(book.title) AS UPPERBookTitle'),
-            array('CONCAT(Book.Title, Book.isbn)', 'foo', 'CONCAT(book.title, book.isbn) AS foo'),
+            array('Book.Title', 'BookTitle', 'book.title AS `BookTitle`'),
+            array('Book.Title', null, 'book.title AS `BookTitle`'),
+            array('UPPER(Book.Title)', null, 'UPPER(book.title) AS `UPPERBookTitle`'),
+            array('CONCAT(Book.Title, Book.isbn)', 'foo', 'CONCAT(book.title, book.isbn) AS `foo`'),
         );
     }
 
@@ -1296,14 +1346,14 @@ class ModelCriteriaTest extends BookstoreTestBase
         return array(
             // Examples for simple string concatenation needed for MSSQL.
             // MSSQL has no CONCAT() function so uses + to join strings.
-            array("CONVERT(varchar, Author.Age, 120) + \' GMT\'", 'GMTCreatedAt', "CONVERT(varchar, author.age, 120) + \' GMT\' AS GMTCreatedAt"),
-            array("(Author.FirstName + ' ' + Author.LastName)", 'AuthorFullname', "(author.first_name + ' ' + author.last_name) AS AuthorFullname"),
-            array("('\"' + Author.FirstName + ' ' + Author.LastName + '\"')", 'QuotedAuthorFullname', "('\"' + author.first_name + ' ' + author.last_name + '\"') AS QuotedAuthorFullname"),
+            array("CONVERT(varchar, Author.Age, 120) + \' GMT\'", 'GMTCreatedAt', "CONVERT(varchar, author.age, 120) + \' GMT\' AS `GMTCreatedAt`"),
+            array("(Author.FirstName + ' ' + Author.LastName)", 'AuthorFullname', "(author.first_name + ' ' + author.last_name) AS `AuthorFullname`"),
+            array("('\"' + Author.FirstName + ' ' + Author.LastName + '\"')", 'QuotedAuthorFullname', "('\"' + author.first_name + ' ' + author.last_name + '\"') AS `QuotedAuthorFullname`"),
 
             // Examples for simple string concatenation needed for Sqlite
             // Sqlite has no CONCAT() function so uses || to join strings.  || can also be used to join strings in PQSql and Oracle
-            array("(Author.FirstName || ' ' || Author.LastName)", 'AuthorFullname', "(author.first_name || ' ' || author.last_name) AS AuthorFullname"),
-            array("('\"' || Author.FirstName || ' ' || Author.LastName || '\"')", 'QuotedAuthorFullname', "('\"' || author.first_name || ' ' || author.last_name || '\"') AS QuotedAuthorFullname"),
+            array("(Author.FirstName || ' ' || Author.LastName)", 'AuthorFullname', "(author.first_name || ' ' || author.last_name) AS `AuthorFullname`"),
+            array("('\"' || Author.FirstName || ' ' || Author.LastName || '\"')", 'QuotedAuthorFullname', "('\"' || author.first_name || ' ' || author.last_name || '\"') AS `QuotedAuthorFullname`"),
         );
     }
 
@@ -1319,18 +1369,35 @@ class ModelCriteriaTest extends BookstoreTestBase
         $this->assertCriteriaTranslation($c, $sql, $params, 'withColumn() adds a calculated column using quotes to the select clause');
     }
 
+    public function testWithColumnAndSelect()
+    {
+        $c = new ModelCriteria('bookstore', 'Author');
+        $c->join('Book');
+        $c->withColumn('COUNT(Book.Id)', 'NbBooks');
+        $c->select(array('FirstName', 'LastName'));
+        $collection = $c->find();
+
+        $this->assertThat($collection, $this->isInstanceOf('PropelCollection'));
+
+        foreach ($collection as $array) {
+            $this->assertArrayHasKey('FirstName', $array);
+            $this->assertArrayHasKey('LastName', $array);
+            $this->assertArrayHasKey('NbBooks', $array);
+        }
+    }
+
     public function testWithColumnAndSelectColumns()
     {
         $c = new ModelCriteria('bookstore', 'Book');
         $c->withColumn('UPPER(Book.Title)', 'foo');
-        $sql = 'SELECT book.id, book.title, book.isbn, book.price, book.publisher_id, book.author_id, UPPER(book.title) AS foo FROM `book`';
+        $sql = 'SELECT book.id, book.title, book.isbn, book.price, book.publisher_id, book.author_id, UPPER(book.title) AS `foo` FROM `book`';
         $params = array();
         $this->assertCriteriaTranslation($c, $sql, $params, 'withColumn() adds the object columns if the criteria has no select columns');
 
         $c = new ModelCriteria('bookstore', 'Book');
         $c->addSelectColumn('book.id');
         $c->withColumn('UPPER(Book.Title)', 'foo');
-        $sql = 'SELECT book.id, UPPER(book.title) AS foo FROM `book`';
+        $sql = 'SELECT book.id, UPPER(book.title) AS `foo` FROM `book`';
         $params = array();
         $this->assertCriteriaTranslation($c, $sql, $params, 'withColumn() does not add the object columns if the criteria already has select columns');
 
@@ -1338,7 +1405,7 @@ class ModelCriteriaTest extends BookstoreTestBase
         $c->addSelectColumn('book.id');
         $c->withColumn('UPPER(Book.Title)', 'foo');
         $c->addSelectColumn('book.title');
-        $sql = 'SELECT book.id, book.title, UPPER(book.title) AS foo FROM `book`';
+        $sql = 'SELECT book.id, book.title, UPPER(book.title) AS `foo` FROM `book`';
         $params = array();
         $this->assertCriteriaTranslation($c, $sql, $params, 'withColumn() does adds as column after the select columns even though the withColumn() method was called first');
 
@@ -1346,9 +1413,9 @@ class ModelCriteriaTest extends BookstoreTestBase
         $c->addSelectColumn('book.id');
         $c->withColumn('UPPER(Book.Title)', 'foo');
         $c->withColumn('UPPER(Book.isbn)', 'isbn');
-        $sql = 'SELECT book.id, UPPER(book.title) AS foo, UPPER(book.isbn) AS isbn FROM `book`';
+        $sql = 'SELECT book.id, UPPER(book.title) AS `foo`, UPPER(book.isbn) AS `isbn` FROM `book`';
         $params = array();
-        $this->assertCriteriaTranslation($c, $sql, $params, 'withColumn() called repeatedly adds several as colums');
+        $this->assertCriteriaTranslation($c, $sql, $params, 'withColumn() called repeatedly adds several as columns');
     }
 
     public function testKeepQuery()
@@ -1518,6 +1585,7 @@ class ModelCriteriaTest extends BookstoreTestBase
      */
     public function testFindOneOrCreateThrowsExceptionWhenQueryContainsJoin()
     {
+        $this->expectException(PropelException::class);
         $book = BookQuery::create('b')
             ->filterByPrice(125)
             ->useAuthorQuery()
@@ -1678,6 +1746,7 @@ class ModelCriteriaTest extends BookstoreTestBase
      */
     public function testFindPksCompositeKey()
     {
+        $this->expectException(PropelException::class);
         $c = new ModelCriteria('bookstore', 'BookListRel');
         $bookListRel = $c->findPks(array(array(1, 2)));
 
@@ -2529,6 +2598,85 @@ class ModelCriteriaTest extends BookstoreTestBase
             ->combine(array('u1', 'u2'), 'or');
         $result = BasePeer::createSelectSql($c, $params);
         $this->assertEquals($result, $sql);
+    }
+
+    public function testClear()
+    {
+        // initial assumptions
+        $c1 = BookQuery::create();
+        $c2 = BookQuery::create();
+
+        $this->assertEquals($c1, $c2);
+        $this->assertNotSame($c1, $c2);
+
+        $c1->clear();
+        $this->assertEquals($c1, $c2);
+
+        // alias is one of initialization parameters and as such should be preserved
+        // no matter how criteria object was created
+        $c1 = BookQuery::create('alias1');
+        $c2 = BookQuery::create('alias1');
+        $this->assertEquals($c1, $c2);
+        $c1->clear();
+        $this->assertEquals($c1, $c2);
+
+        $c1 = new ModelCriteria('bookstore', 'Book', 'alias2');
+        $c2 = new ModelCriteria('bookstore', 'Book', 'alias2');
+        $this->assertEquals($c1, $c2);
+        $c1->clear();
+        $this->assertEquals($c1, $c2);
+
+        // actual extensive criteria test
+        $c1 = BookQuery::create();
+        $c2 = BookQuery::create();
+
+        // modifiers & flags
+        $c1->setModelAlias('b', true);
+        $c1->setLimit(1);
+        $c1->setOffset(1);
+        $c1->setDistinct();
+
+        // filters
+        $c1->filterByPrice(1);
+
+        // where conditions
+        $c1->condition('u1', 'b.title LIKE ?', '%test1%');
+        $c1->condition('u2', 'b.isbn LIKE ?', '%test2%');
+        $c1->where('b.id = ?', 12);
+        $c1->_or();
+        $c1->where(array('u1', 'u2'), Criteria::LOGICAL_AND);
+
+        // select columns
+        $c1->select(array('ISBN', 'Price'));
+        $c1->add(BookPeer::TITLE, 'foo');
+        $c1->addUsingAlias(BookPeer::PRICE, 'p');
+
+        // joins
+        $c1->leftJoinAuthor('alias1');
+        $c1->rightJoinAuthor('alias2');
+        $c1->innerJoinAuthor('alias3');
+        $c1->withColumn('COUNT(alias1.Id)', 'NbAuthors');
+        $c1->with('alias2');
+
+        // subquery use
+        $c1
+            ->useAuthorQuery()
+                ->filterByFirstName('Leo')
+            ->endUse()
+        ;
+
+        // meta
+        $c1->setIgnoreCase(true);
+        $c1->setComment('comment');
+        $formatter = new PropelArrayFormatter();
+        $formatter->diff = true;
+        $c1->setFormatter($formatter);
+        $c1->setSingleRecord(true);
+        $c1->setUseTransaction(true);
+
+        $this->assertNotEquals($c1, $c2);
+        $c1->clear();
+        $this->assertEquals($c1, $c2);
     }
 }
 

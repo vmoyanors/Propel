@@ -18,7 +18,7 @@ class VersionableBehaviorQueryBuilderModifier
 {
     protected $behavior, $table, $builder, $objectClassname, $peerClassname;
 
-    public function __construct($behavior)
+    public function __construct(VersionableBehavior $behavior)
     {
         $this->behavior = $behavior;
         $this->table = $behavior->getTable();
@@ -55,6 +55,8 @@ class VersionableBehaviorQueryBuilderModifier
     /**
      * Get the getter of the column of the behavior
      *
+     * @param string $name
+     *
      * @return string The related getter, e.g. 'getVersion'
      */
     protected function getColumnGetter($name = 'version_column')
@@ -64,6 +66,8 @@ class VersionableBehaviorQueryBuilderModifier
 
     /**
      * Get the setter of the column of the behavior
+     *
+     * @param string $name
      *
      * @return string The related setter, e.g. 'setVersion'
      */
@@ -76,7 +80,7 @@ class VersionableBehaviorQueryBuilderModifier
     {
         $this->setBuilder($builder);
         $script = '';
-        if ($this->getParameter('version_column') != 'version') {
+        if (strcasecmp($this->getParameter('version_column'), 'version') != 0) {
             $this->addFilterByVersion($script);
             $this->addOrderByVersion($script);
         }
@@ -116,5 +120,4 @@ public function orderByVersion(\$order = Criteria::ASC)
 }
 ";
     }
-
 }

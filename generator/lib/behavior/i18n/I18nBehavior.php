@@ -8,9 +8,8 @@
  * @license    MIT License
  */
 
-require_once dirname(__FILE__) . '/I18nBehaviorObjectBuilderModifier.php';
-require_once dirname(__FILE__) . '/I18nBehaviorQueryBuilderModifier.php';
-require_once dirname(__FILE__) . '/I18nBehaviorPeerBuilderModifier.php';
+
+
 
 /**
  * Allows translation of text columns through transparent one-to-many relationship
@@ -30,7 +29,6 @@ class I18nBehavior extends Behavior
         'i18n_columns'  => '',
         'i18n_pk_name'  => null,
         'locale_column' => 'locale',
-        'locale_length' => 5,
         'default_locale' => null,
         'locale_alias'  => '',
     );
@@ -129,7 +127,7 @@ class I18nBehavior extends Behavior
             $this->i18nTable->addColumn(array(
                 'name'       => $localeColumnName,
                 'type'       => PropelTypes::VARCHAR,
-                'size'       => $this->getParameter('locale_length') ? (int) $this->getParameter('locale_length') : 5,
+                'size'       => 5,
                 'default'    => $this->getDefaultLocale(),
                 'primaryKey' => 'true',
             ));
@@ -228,7 +226,7 @@ class I18nBehavior extends Behavior
         if ($columnNames = $this->getI18nColumnNamesFromConfig()) {
             // Strategy 1: use the i18n_columns parameter
             foreach ($columnNames as $columnName) {
-                $columns []= $i18nTable->getColumn($columnName);
+                $columns[] = $i18nTable->getColumn($columnName);
             }
         } else {
             // strategy 2: use the columns of the i18n table
@@ -236,7 +234,7 @@ class I18nBehavior extends Behavior
             // (such as timestampable behavior)
             foreach ($i18nTable->getColumns() as $column) {
                 if (!$column->isPrimaryKey()) {
-                    $columns []= $column;
+                    $columns[] = $column;
                 }
             }
         }
@@ -280,5 +278,4 @@ class I18nBehavior extends Behavior
 
         return $this->peerBuilderModifier;
     }
-
 }

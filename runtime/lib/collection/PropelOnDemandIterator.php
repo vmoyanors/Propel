@@ -30,8 +30,14 @@ class PropelOnDemandIterator implements Iterator
 
     protected $currentKey = -1;
 
+    /**
+     * @var boolean|null
+     */
     protected $isValid = null;
 
+    /**
+     * @var boolean
+     */
     protected $enableInstancePoolingOnFinish = false;
 
     /**
@@ -41,7 +47,7 @@ class PropelOnDemandIterator implements Iterator
     public function __construct(PropelFormatter $formatter, PDOStatement $stmt)
     {
         $this->formatter = $formatter;
-        $this->stmt      = $stmt;
+        $this->stmt = $stmt;
         $this->enableInstancePoolingOnFinish = Propel::disableInstancePooling();
     }
 
@@ -85,7 +91,7 @@ class PropelOnDemandIterator implements Iterator
     }
 
     /**
-     * Advances the curesor in the statement
+     * Advances the cursor in the statement
      * Closes the cursor if the end of the statement is reached
      */
     public function next()

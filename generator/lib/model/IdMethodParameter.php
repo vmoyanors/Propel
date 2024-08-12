@@ -8,7 +8,6 @@
  * @license    MIT License
  */
 
-require_once dirname(__FILE__) . '/XMLElement.php';
 
 /**
  * Information related to an ID method.
@@ -24,10 +23,15 @@ class IdMethodParameter extends XMLElement
 
     private $name;
     private $value;
+
+    /**
+     * @var Table
+     */
     private $parentTable;
 
-   /**
+    /**
      * Sets up the IdMethodParameter object based on the attributes that were passed to loadFromXML().
+     *
      * @see        parent::loadFromXML()
      */
     protected function setupObject()

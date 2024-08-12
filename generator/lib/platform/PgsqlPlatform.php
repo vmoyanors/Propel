@@ -8,7 +8,6 @@
  * @license    MIT License
  */
 
-require_once dirname(__FILE__) . '/DefaultPlatform.php';
 
 /**
  * Postgresql PropelPlatformInterface implementation.
@@ -63,7 +62,9 @@ class PgsqlPlatform extends DefaultPlatform
 
     /**
      * Escape the string for RDBMS.
-     * @param  string $text
+     *
+     * @param string $text
+     *
      * @return string
      */
     public function disconnectedEscapeText($text)
@@ -77,7 +78,7 @@ class PgsqlPlatform extends DefaultPlatform
 
     public function getBooleanString($b)
     {
-        // parent method does the checking for allowes tring
+        // parent method does the checking to allow string
         // representations & returns integer
         $b = parent::getBooleanString($b);
 
@@ -123,8 +124,7 @@ class PgsqlPlatform extends DefaultPlatform
 
     protected function getAddSequenceDDL(Table $table)
     {
-        if ($table->getIdMethod() == IDMethod::NATIVE
-         && $table->getIdMethodParameters() != null) {
+        if ($table->getIdMethod() == IDMethod::NATIVE && $table->getIdMethodParameters() != null) {
             $pattern = "
 CREATE SEQUENCE %s;
 ";
@@ -137,8 +137,7 @@ CREATE SEQUENCE %s;
 
     protected function getDropSequenceDDL(Table $table)
     {
-        if ($table->getIdMethod() == IDMethod::NATIVE
-         && $table->getIdMethodParameters() != null) {
+        if ($table->getIdMethod() == IDMethod::NATIVE && $table->getIdMethodParameters() != null) {
             $pattern = "
 DROP SEQUENCE %s;
 ";
@@ -321,18 +320,18 @@ DROP TABLE IF EXISTS %s CASCADE;
             $sqlType = $col->getType() === PropelTypes::BIGINT ? 'bigserial' : 'serial';
         }
         if ($this->hasSize($sqlType) && $col->isDefaultSqlType($this)) {
-            $ddl []= $sqlType . $domain->printSize();
+            $ddl[] = $sqlType . $domain->printSize();
         } else {
-            $ddl []= $sqlType;
+            $ddl[] = $sqlType;
         }
         if ($default = $this->getColumnDefaultValueDDL($col)) {
-            $ddl []= $default;
+            $ddl[] = $default;
         }
         if ($notNull = $this->getNullString($col->isNotNull())) {
-            $ddl []= $notNull;
+            $ddl[] = $notNull;
         }
         if ($autoIncrement = $col->getAutoIncrementString()) {
-            $ddl []= $autoIncrement;
+            $ddl[] = $autoIncrement;
         }
 
         return implode(' ', $ddl);
@@ -393,7 +392,7 @@ ALTER TABLE %s ALTER COLUMN %s;
         foreach ($changedProperties as $key => $property) {
             switch ($key) {
                 case 'defaultValueType':
-                    continue;
+                    continue 2;
                 case 'size':
                 case 'type':
                 case 'scale':

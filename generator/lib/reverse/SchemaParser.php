@@ -20,6 +20,7 @@ interface SchemaParser
 
     /**
      * Gets the database connection.
+     *
      * @return PDO
      */
     public function getConnection();
@@ -41,13 +42,15 @@ interface SchemaParser
     /**
      * Gets a specific propel (renamed) property from the build.
      *
-     * @param  string $name
+     * @param string $name
+     *
      * @return mixed
      */
     public function getBuildProperty($name);
 
     /**
      * Gets array of warning messages.
+     *
      * @return array string[]
      */
     public function getWarnings();
@@ -56,6 +59,7 @@ interface SchemaParser
      * Parse the schema and populate passed-in Database model object.
      *
      * @param Database $database
+     * @param Task     $task
      *
      * @return int number of generated tables
      */

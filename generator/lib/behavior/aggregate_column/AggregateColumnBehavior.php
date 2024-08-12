@@ -8,8 +8,6 @@
  * @license    MIT License
  */
 
-require_once 'AggregateColumnRelationBehavior.php';
-
 /**
  * Keeps an aggregate column updated with related table
  *
@@ -74,19 +72,19 @@ class AggregateColumnBehavior extends Behavior
     protected function addObjectCompute()
     {
         $conditions = array();
-        if($this->getParameter('condition')) {
-          $conditions[] = $this->getParameter('condition');
+        if ($this->getParameter('condition')) {
+            $conditions[] = $this->getParameter('condition');
         }
 
         $bindings = array();
         $database = $this->getTable()->getDatabase();
         foreach ($this->getForeignKey()->getColumnObjectsMapping() as $index => $columnReference) {
             $conditions[] = $columnReference['local']->getFullyQualifiedName() . ' = :p' . ($index + 1);
-            $bindings[$index + 1]   = $columnReference['foreign']->getPhpName();
+            $bindings[$index + 1] = $columnReference['foreign']->getPhpName();
         }
         $tableName = $database->getTablePrefix() . $this->getParameter('foreign_table');
         if ($database->getPlatform()->supportsSchemas() && $this->getParameter('foreign_schema')) {
-            $tableName = $this->getParameter('foreign_schema').'.'.$tableName;
+            $tableName = $this->getParameter('foreign_schema') . '.' . $tableName;
         }
         $sql = sprintf('SELECT %s FROM %s WHERE %s',
             $this->getParameter('expression'),
@@ -121,7 +119,7 @@ class AggregateColumnBehavior extends Behavior
         $database = $this->getTable()->getDatabase();
         $tableName = $database->getTablePrefix() . $this->getParameter('foreign_table');
         if ($database->getPlatform()->supportsSchemas() && $this->getParameter('foreign_schema')) {
-            $tableName = $this->getParameter('foreign_schema'). '.' . $tableName;
+            $tableName = $this->getParameter('foreign_schema') . '.' . $tableName;
         }
 
         return $database->getTable($tableName);
@@ -135,6 +133,7 @@ class AggregateColumnBehavior extends Behavior
         if (!$fks) {
             throw new InvalidArgumentException(sprintf('You must define a foreign key to the \'%s\' table in the \'%s\' table to enable the \'aggregate_column\' behavior', $this->getTable()->getName(), $foreignTable->getName()));
         }
+
         // FIXME doesn't work when more than one fk to the same table
         return array_shift($fks);
     }
@@ -143,5 +142,4 @@ class AggregateColumnBehavior extends Behavior
     {
         return $this->getTable()->getColumn($this->getParameter('name'));
     }
-
 }

@@ -8,7 +8,6 @@
  * @license    MIT License
  */
 
-require_once dirname(__FILE__) . '/Index.php';
 
 /**
  * Information about unique columns of a table.  This class assumes
@@ -43,7 +42,7 @@ class Unique extends Index
 
         $uniqueNode = $node->appendChild($doc->createElement('unique'));
         $uniqueNode->setAttribute('name', $this->getName());
-        $columns = $this->getColumns();
+
         foreach ($this->getColumns() as $colname) {
             $uniqueColNode = $uniqueNode->appendChild($doc->createElement('unique-column'));
             $uniqueColNode->setAttribute('name', $colname);
@@ -53,5 +52,4 @@ class Unique extends Index
             $vi->appendXml($uniqueNode);
         }
     }
-
 }

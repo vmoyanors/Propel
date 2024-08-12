@@ -8,7 +8,7 @@
  * @license    MIT License
  */
 
-require_once dirname(__FILE__) . '/XMLElement.php';
+//require_once dirname(__FILE__) . '/XMLElement.php';
 
 /**
  * A Class for information regarding possible objects representing a table
@@ -29,11 +29,13 @@ class Inheritance extends XMLElement
 
     /**
      * Sets up the Inheritance object based on the attributes that were passed to loadFromXML().
+     *
      * @see        parent::loadFromXML()
      */
     protected function setupObject()
     {
-        $this->key = $this->getAttribute("key");
+        // Clean key from special characters not allowed in constant names
+        $this->key = rtrim(preg_replace('/(\W|_)+/', '_', $this->getAttribute("key")), '_');
         $this->className = $this->getAttribute("class");
         $this->pkg = $this->getAttribute("package");
         $this->ancestor = $this->getAttribute("extends");
@@ -41,6 +43,7 @@ class Inheritance extends XMLElement
 
     /**
      * Get the value of key.
+     *
      * @return value of key.
      */
     public function getKey()
@@ -50,7 +53,8 @@ class Inheritance extends XMLElement
 
     /**
      * Set the value of key.
-     * @param      v  Value to assign to key.
+     *
+     * @param   $v Value to assign to key.
      */
     public function setKey($v)
     {
@@ -59,7 +63,8 @@ class Inheritance extends XMLElement
 
     /**
      * Get the value of parent.
-     * @return value of parent.
+     *
+     * @return Column
      */
     public function getColumn()
     {
@@ -68,16 +73,18 @@ class Inheritance extends XMLElement
 
     /**
      * Set the value of parent.
-     * @param      v  Value to assign to parent.
+     *
+     * @param Column $v Value to assign to parent.
      */
-    public function setColumn(Column  $v)
+    public function setColumn(Column $v)
     {
         $this->parent = $v;
     }
 
     /**
      * Get the value of className.
-     * @return value of className.
+     *
+     * @return string
      */
     public function getClassName()
     {
@@ -86,7 +93,8 @@ class Inheritance extends XMLElement
 
     /**
      * Set the value of className.
-     * @param      v  Value to assign to className.
+     *
+     * @param string $v
      */
     public function setClassName($v)
     {
@@ -95,7 +103,8 @@ class Inheritance extends XMLElement
 
     /**
      * Get the value of package.
-     * @return value of package.
+     *
+     * @return string
      */
     public function getPackage()
     {
@@ -104,7 +113,8 @@ class Inheritance extends XMLElement
 
     /**
      * Set the value of package.
-     * @param      v  Value to assign to package.
+     *
+     * @param string $v
      */
     public function setPackage($v)
     {
@@ -113,7 +123,8 @@ class Inheritance extends XMLElement
 
     /**
      * Get the value of ancestor.
-     * @return value of ancestor.
+     *
+     * @return string
      */
     public function getAncestor()
     {
@@ -122,7 +133,8 @@ class Inheritance extends XMLElement
 
     /**
      * Set the value of ancestor.
-     * @param      v  Value to assign to ancestor.
+     *
+     * @param string $v
      */
     public function setAncestor($v)
     {

@@ -8,8 +8,7 @@
  * @license     MIT License
  */
 
-require_once dirname(__FILE__) . '/../Database.php';
-require_once dirname(__FILE__) . '/PropelTableDiff.php';
+
 
 /**
  * Value object for storing Database object diffs
@@ -269,16 +268,16 @@ class PropelDatabaseDiff
     {
         $changes = array();
         if ($count = $this->countAddedTables()) {
-            $changes []= sprintf('%d added tables', $count);
+            $changes[] = sprintf('%d added tables', $count);
         }
         if ($count = $this->countRemovedTables()) {
-            $changes []= sprintf('%d removed tables', $count);
+            $changes[] = sprintf('%d removed tables', $count);
         }
         if ($count = $this->countModifiedTables()) {
-            $changes []= sprintf('%d modified tables', $count);
+            $changes[] = sprintf('%d modified tables', $count);
         }
         if ($count = $this->countRenamedTables()) {
-            $changes []= sprintf('%d renamed tables', $count);
+            $changes[] = sprintf('%d renamed tables', $count);
         }
 
         return implode(', ', $changes);
@@ -314,5 +313,4 @@ class PropelDatabaseDiff
 
         return $ret;
     }
-
 }

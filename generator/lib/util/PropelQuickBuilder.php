@@ -8,8 +8,7 @@
  * @license    MIT License
  */
 
-require_once dirname(__FILE__) . '/../builder/util/XmlToAppData.php';
-require_once dirname(__FILE__) . '/PropelSQLParser.php';
+
 
 class PropelQuickBuilder
 {
@@ -45,7 +44,7 @@ class PropelQuickBuilder
     public function getPlatform()
     {
         if (null === $this->platform) {
-            require_once dirname(__FILE__) . '/../platform/SqlitePlatform.php';
+
             $this->platform = new SqlitePlatform();
         }
 
@@ -70,7 +69,7 @@ class PropelQuickBuilder
     public function getConfig()
     {
         if (null === $this->config) {
-            require_once dirname(__FILE__) . '/../config/QuickGeneratorConfig.php';
+
             $this->config = new QuickGeneratorConfig($this->getPlatform());
         }
 
@@ -201,7 +200,7 @@ class PropelQuickBuilder
                     foreach (array('nestedsetpeer', 'nestedset') as $target) {
                         $script .= $this->getConfig()->getConfiguredBuilder($table, $target)->build();
                     }
-                break;
+                    break;
                 case 'MaterializedPath':
                     foreach (array('nodepeer', 'node') as $target) {
                         $script .= $this->getConfig()->getConfiguredBuilder($table, $target)->build();
@@ -209,11 +208,11 @@ class PropelQuickBuilder
                     foreach (array('nodepeerstub', 'nodestub') as $target) {
                         $script .= $this->getConfig()->getConfiguredBuilder($table, $target)->build();
                     }
-                break;
+                    break;
                 case 'AdjacencyList':
                     // No implementation for this yet.
                 default:
-                break;
+                    break;
             }
         }
 

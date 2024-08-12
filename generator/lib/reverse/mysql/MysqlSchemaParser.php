@@ -8,7 +8,6 @@
  * @license    MIT License
  */
 
-require_once dirname(__FILE__) . '/../BaseSchemaParser.php';
 
 /**
  * Mysql database schema parser.
@@ -153,13 +152,12 @@ class MysqlSchemaParser extends BaseSchemaParser
      */
     protected function addColumns(Table $table)
     {
-        $stmt = $this->dbh->query("SHOW COLUMNS FROM `" . $table->getName() . "`");
+        $stmt = $this->dbh->query("SHOW FULL COLUMNS FROM `" . $table->getName() . "`");
 
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $column = $this->getColumnFromRow($row, $table);
             $table->addColumn($column);
         }
-
     } // addColumn()
 
     /**
@@ -168,6 +166,7 @@ class MysqlSchemaParser extends BaseSchemaParser
      *
      * @param array $row An associative array with the following keys:
      *                       Field, Type, Null, Key, Default, Extra.
+     *
      * @return Column
      */
     public function getColumnFromRow($row, Table $table)
@@ -179,6 +178,7 @@ class MysqlSchemaParser extends BaseSchemaParser
         $precision = null;
         $scale = null;
         $sqlType = false;
+        $desc = $row['Comment'];
 
         $regexp = '/^
             (\w+)        # column type [1]
@@ -203,7 +203,7 @@ class MysqlSchemaParser extends BaseSchemaParser
                 $sqlType = $row['Type'];
             }
             foreach (self::$defaultTypeSizes as $type => $defaultSize) {
-                if ($nativeType == $type && $size == $defaultSize) {
+                if ($nativeType == $type && $size == $defaultSize && $scale === null) {
                     $size = null;
                     continue;
                 }
@@ -224,7 +224,7 @@ class MysqlSchemaParser extends BaseSchemaParser
         if (!$propelType) {
             $propelType = Column::DEFAULT_TYPE;
             $sqlType = $row['Type'];
-            $this->warn("Column [" . $table->getName() . "." . $name. "] has a column type (".$nativeType.") that Propel does not support.");
+            $this->warn("Column [" . $table->getName() . "." . $name . "] has a column type (" . $nativeType . ") that Propel does not support.");
         }
 
         // Special case for TINYINT(1) which is a BOOLEAN
@@ -242,8 +242,12 @@ class MysqlSchemaParser extends BaseSchemaParser
         $column->getDomain()->replaceScale($scale);
         if ($default !== null) {
             if ($propelType == PropelTypes::BOOLEAN) {
-                if ($default == '1') $default = 'true';
-                if ($default == '0') $default = 'false';
+                if ($default == '1') {
+                    $default = 'true';
+                }
+                if ($default == '0') {
+                    $default = 'false';
+                }
             }
             if (in_array($default, array('CURRENT_TIMESTAMP'))) {
                 $type = ColumnDefaultValue::TYPE_EXPR;
@@ -260,7 +264,34 @@ class MysqlSchemaParser extends BaseSchemaParser
             $column->addVendorInfo($vi);
         }
 
+        if ($desc){
+            if(!$this->isUtf8($desc))
+                $desc = utf8_encode($desc);
+            $column->setDescription($desc);
+        }
+
         return $column;
+    }
+
+    /**
+     * Return True if $string is utf8
+     *
+     * @param string $string
+     *
+     * @return boolean
+     */
+    protected function isUtf8( $string)
+    {
+        return preg_match('%^(?:
+              [\x09\x0A\x0D\x20-\x7E]            # ASCII
+            | [\xC2-\xDF][\x80-\xBF]             # non-overlong 2-byte
+            |  \xE0[\xA0-\xBF][\x80-\xBF]        # excluding overlongs
+            | [\xE1-\xEC\xEE\xEF][\x80-\xBF]{2}  # straight 3-byte
+            |  \xED[\x80-\x9F][\x80-\xBF]        # excluding surrogates
+            |  \xF0[\x90-\xBF][\x80-\xBF]{2}     # planes 1-3
+            | [\xF1-\xF3][\x80-\xBF]{3}          # planes 4-15
+            |  \xF4[\x80-\x8F][\x80-\xBF]{2}     # plane 16
+        )*$%xs', $string);
     }
 
     /**
@@ -270,14 +301,14 @@ class MysqlSchemaParser extends BaseSchemaParser
     {
         $database = $table->getDatabase();
 
-        $stmt = $this->dbh->query("SHOW CREATE TABLE `" . $table->getName(). "`");
+        $stmt = $this->dbh->query("SHOW CREATE TABLE `" . $table->getName() . "`");
         $row = $stmt->fetch(PDO::FETCH_NUM);
 
         $foreignKeys = array(); // local store to avoid duplicates
 
         // Get the information on all the foreign keys
         $regEx = '/CONSTRAINT `([^`]+)` FOREIGN KEY \((.+)\) REFERENCES `([^`]*)` \((.+)\)(.*)/';
-        if (preg_match_all($regEx,$row[1],$matches)) {
+        if (preg_match_all($regEx, $row[1], $matches)) {
             $tmpArray = array_keys($matches[0]);
             foreach ($tmpArray as $curKey) {
                 $name = $matches[1][$curKey];
@@ -305,7 +336,7 @@ class MysqlSchemaParser extends BaseSchemaParser
                 if ($fkey) {
                     //split foreign key information -> search for ON DELETE and afterwords for ON UPDATE action
                     foreach (array_keys($fkactions) as $fkaction) {
-                        $result = NULL;
+                        $result = null;
                         preg_match('/' . $fkaction . ' (' . ForeignKey::CASCADE . '|' . ForeignKey::SETNULL . ')/', $fkey, $result);
                         if ($result && is_array($result) && isset($result[1])) {
                             $fkactions[$fkaction] = $result[1];
@@ -313,16 +344,8 @@ class MysqlSchemaParser extends BaseSchemaParser
                     }
                 }
 
-                // restrict is the default
-                foreach ($fkactions as $key => $action) {
-                    if ($action == ForeignKey::RESTRICT) {
-                        $fkactions[$key] = null;
-                    }
-                }
-
                 $localColumns = array();
                 $foreignColumns = array();
-                ;
                 $foreignTable = $database->getTable($ftbl, true);
 
                 foreach ($fcols as $fcol) {
@@ -342,14 +365,11 @@ class MysqlSchemaParser extends BaseSchemaParser
                     $foreignKeys[$name] = $fk;
                 }
 
-                for ($i=0; $i < count($localColumns); $i++) {
+                for ($i = 0; $i < count($localColumns); $i++) {
                     $foreignKeys[$name]->addReference($localColumns[$i], $foreignColumns[$i]);
                 }
-
             }
-
         }
-
     }
 
     /**

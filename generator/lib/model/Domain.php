@@ -8,7 +8,6 @@
  * @license    MIT License
  */
 
-require_once dirname(__FILE__) . '/XMLElement.php';
 
 /**
  * A class for holding data about a domain used in the schema.
@@ -80,6 +79,7 @@ class Domain extends XMLElement
 
     /**
      * Copy the values from current object into passed-in Domain.
+     *
      * @param Domain $domain Domain to copy values into.
      */
     public function copy(Domain $domain)
@@ -95,6 +95,7 @@ class Domain extends XMLElement
 
     /**
      * Sets up the Domain object based on the attributes that were passed to loadFromXML().
+     *
      * @see        parent::loadFromXML()
      */
     protected function setupObject()
@@ -120,6 +121,7 @@ class Domain extends XMLElement
 
     /**
      * Sets the owning database object (if this domain is being setup via XML).
+     *
      * @param Database $database
      */
     public function setDatabase(Database $database)
@@ -129,6 +131,7 @@ class Domain extends XMLElement
 
     /**
      * Gets the owning database object (if this domain was setup via XML).
+     *
      * @return Database
      */
     public function getDatabase()
@@ -243,7 +246,7 @@ class Domain extends XMLElement
     /**
      * Replaces the type if the new value is not null.
      *
-     * @param string $value The tyep to set.
+     * @param string $value The type to set.
      */
     public function replaceType($value)
     {
@@ -254,6 +257,7 @@ class Domain extends XMLElement
 
     /**
      * Gets the default value object.
+     *
      * @return ColumnDefaultValue The default value object for this domain.
      */
     public function getDefaultValue()
@@ -263,6 +267,7 @@ class Domain extends XMLElement
 
     /**
      * Gets the default value, type-casted for use in PHP OM.
+     *
      * @return mixed
      * @see        getDefaultValue()
      * @throws EngineException
@@ -299,7 +304,7 @@ class Domain extends XMLElement
     /**
      * Replaces the default value if the new value is not null.
      *
-     * @param ColumnDefaultValue $value The defualt value object
+     * @param ColumnDefaultValue $value The default value object
      */
     public function replaceDefaultValue(ColumnDefaultValue $value = null)
     {
@@ -326,6 +331,7 @@ class Domain extends XMLElement
 
     /**
      * Replaces the SQL type if the new value is not null.
+     *
      * @param string $sqlType The native SQL type to use for this domain.
      */
     public function replaceSqlType($sqlType)
@@ -388,5 +394,4 @@ class Domain extends XMLElement
             $domainNode->setAttribute('description', $this->description);
         }
     }
-
 }

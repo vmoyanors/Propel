@@ -8,9 +8,8 @@
  * @license     MIT License
  */
 
-require_once dirname(__FILE__) . '/../Database.php';
-require_once dirname(__FILE__) . '/PropelDatabaseDiff.php';
-require_once dirname(__FILE__) . '/PropelTableComparator.php';
+
+
 
 /**
  * Service class for comparing Database objects
@@ -130,7 +129,7 @@ class PropelDatabaseComparator
 
         // check for table differences
         foreach ($fromDatabaseTables as $fromTable) {
-            if ($this->toDatabase->hasTable($fromTable->getName(), $caseInsensitive)) {
+            if ($this->toDatabase->hasTable($fromTable->getName(), $caseInsensitive) && !$fromTable->isSkipSql()) {
                 $toTable = $this->toDatabase->getTable($fromTable->getName(), $caseInsensitive);
                 $databaseDiff = PropelTableComparator::computeDiff($fromTable, $toTable, $caseInsensitive);
                 if ($databaseDiff) {
@@ -149,11 +148,12 @@ class PropelDatabaseComparator
                     $this->databaseDiff->removeAddedTable($addedTableName);
                     $this->databaseDiff->removeRemovedTable($removedTableName);
                     $databaseDifferences--;
+                    // skip to the next added table
+                    break;
                 }
             }
         }
 
         return $databaseDifferences;
     }
-
 }

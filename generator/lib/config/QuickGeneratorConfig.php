@@ -5,13 +5,12 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  *
- * @license		 MIT License
+ * @license         MIT License
  */
 
-require_once dirname(__FILE__) . '/GeneratorConfig.php';
-require_once dirname(__FILE__) . '/GeneratorConfigInterface.php';
-require_once dirname(__FILE__) . '/../platform/PropelPlatformInterface.php';
-require_once dirname(__FILE__) . '/../platform/SqlitePlatform.php';
+
+
+
 
 /**
  * @package propel.generator.config
@@ -61,17 +60,19 @@ class QuickGeneratorConfig implements GeneratorConfigInterface
             throw new Exception("Unable to parse contents of $filepath");
         }
         foreach ($lines as $line) {
-                $line = trim($line);
-                if ($line == "" || $line{0} == '#' || $line{0} == ';') continue;
-                $pos = strpos($line, '=');
-                $property = trim(substr($line, 0, $pos));
-                $value = trim(substr($line, $pos + 1));
-                if ($value === "true") {
-                    $value = true;
-                } elseif ($value === "false") {
-                    $value = false;
-                }
-                $properties[$property] = $value;
+            $line = trim($line);
+            if ($line == "" || $line[0] == '#' || $line[0] == ';') {
+                continue;
+            }
+            $pos = strpos($line, '=');
+            $property = trim(substr($line, 0, $pos));
+            $value = trim(substr($line, $pos + 1));
+            if ($value === "true") {
+                $value = true;
+            } elseif ($value === "false") {
+                $value = false;
+            }
+            $properties[$property] = $value;
         }
 
         return $properties;
@@ -80,14 +81,15 @@ class QuickGeneratorConfig implements GeneratorConfigInterface
     /**
      * Gets a configured data model builder class for specified table and based on type.
      *
-     * @param  Table            $table
-     * @param  string           $type  The type of builder ('ddl', 'sql', etc.)
+     * @param Table  $table
+     * @param string $type  The type of builder ('ddl', 'sql', etc.)
+     *
      * @return DataModelBuilder
      */
     public function getConfiguredBuilder(Table $table, $type)
     {
         $class = $this->builders[$type];
-        require_once dirname(__FILE__) . '/../builder/om/' . $class . '.php';
+
         $builder = new $class($table);
         $builder->setGeneratorConfig($this);
 
@@ -95,13 +97,13 @@ class QuickGeneratorConfig implements GeneratorConfigInterface
     }
 
     /**
-    * Gets a configured Pluralizer class.
-    *
-    * @return     Pluralizer
-    */
+     * Gets a configured Pluralizer class.
+     *
+     * @return Pluralizer
+     */
     public function getConfiguredPluralizer()
     {
-        require_once dirname(__FILE__) . '/../builder/util/DefaultEnglishPluralizer.php';
+
 
         return new DefaultEnglishPluralizer();
     }
@@ -124,7 +126,7 @@ class QuickGeneratorConfig implements GeneratorConfigInterface
                 $newKey = substr($key, strlen("propel."));
                 $j = strpos($newKey, '.');
                 while ($j !== false) {
-                    $newKey =	 substr($newKey, 0, $j) . ucfirst(substr($newKey, $j + 1));
+                    $newKey = substr($newKey, 0, $j) . ucfirst(substr($newKey, $j + 1));
                     $j = strpos($newKey, '.');
                 }
                 $this->setBuildProperty($newKey, $propValue);
@@ -135,7 +137,8 @@ class QuickGeneratorConfig implements GeneratorConfigInterface
     /**
      * Gets a specific propel (renamed) property from the build.
      *
-     * @param  string $name
+     * @param string $name
+     *
      * @return mixed
      */
     public function getBuildProperty($name)

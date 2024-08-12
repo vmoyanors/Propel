@@ -90,8 +90,9 @@ class ColumnDefaultValue
     /**
      * A method to compare if two Default values match
      *
-     * @param  ColumnDefaultValue $other The value to compare to
-     * @return boolean            Wheter this object represents same default value as $other
+     * @param ColumnDefaultValue $other The value to compare to
+     *
+     * @return boolean Whether this object represents same default value as $other
      * @author     Niklas Närhinen <niklas@narhinen.net>
      */
     public function equals(ColumnDefaultValue $other)
@@ -110,5 +111,4 @@ class ColumnDefaultValue
 
         return false; // Can't help, they are different
     }
-
 }

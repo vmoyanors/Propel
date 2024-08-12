@@ -8,7 +8,6 @@
  * @license    MIT License
  */
 
-require_once 'model/AppData.php';
 
 /**
  * The task for building SQL DDL based on the XML datamodel.
@@ -23,6 +22,7 @@ class PropelSQLTask extends AbstractPropelDataModelTask
 
     /**
      * The properties file that maps an SQL file to a particular database.
+     *
      * @var        PhingFile
      */
     private $sqldbmap;
@@ -34,6 +34,7 @@ class PropelSQLTask extends AbstractPropelDataModelTask
 
     /**
      * Set the sqldbmap.
+     *
      * @param PhingFile $sqldbmap The db map.
      */
     public function setSqlDbMap(PhingFile $sqldbmap)
@@ -43,6 +44,7 @@ class PropelSQLTask extends AbstractPropelDataModelTask
 
     /**
      * Get the sqldbmap.
+     *
      * @return PhingFile $sqldbmap.
      */
     public function getSqlDbMap()
@@ -52,6 +54,7 @@ class PropelSQLTask extends AbstractPropelDataModelTask
 
     /**
      * Set the database name.
+     *
      * @param string $database
      */
     public function setDatabase($database)
@@ -61,6 +64,7 @@ class PropelSQLTask extends AbstractPropelDataModelTask
 
     /**
      * Get the database name.
+     *
      * @return string
      */
     public function getDatabase()
@@ -114,7 +118,7 @@ class PropelSQLTask extends AbstractPropelDataModelTask
         try {
             $sqldbmap->store($this->getSqlDbMap(), "Sqlfile -> Database map");
         } catch (IOException $e) {
-            throw new IOException("Unable to store properties: ". $e->getMessage());
+            throw new IOException("Unable to store properties: " . $e->getMessage());
         }
     }
 
@@ -137,7 +141,7 @@ class PropelSQLTask extends AbstractPropelDataModelTask
         $this->createSqlDbMap();
 
         // 2) Now actually create the DDL based on the datamodel(s) from XML schema file.
-        $targetDatabase  = $this->getTargetDatabase();
+        $targetDatabase = $this->getTargetDatabase();
         $generatorConfig = $this->getGeneratorConfig();
 
         foreach ($dataModels as $package => $dataModel) {
@@ -169,7 +173,6 @@ class PropelSQLTask extends AbstractPropelDataModelTask
                     $this->log('Writing to SQL file: ' . $outFile->getPath());
                     file_put_contents($absPath, $ddl);
                 }
-
             } // foreach database
         } //foreach datamodels
 

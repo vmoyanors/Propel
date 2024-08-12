@@ -8,7 +8,6 @@
  * @license    MIT License
  */
 
-require_once dirname(__FILE__) . '/VendorInfo.php';
 
 /**
  * An abstract class for elements represented by XML tags (e.g. Column, Table).
@@ -23,14 +22,14 @@ abstract class XMLElement
     /**
      * The name => value attributes from XML.
      *
-     * @var        array
+     * @var array
      */
     protected $attributes = array();
 
     /**
      * Any associated vendor-specific information objects.
      *
-     * @var        array VendorInfo[]
+     * @var VendorInfo[]
      */
     protected $vendorInfos = array();
 
@@ -42,6 +41,7 @@ abstract class XMLElement
     /**
      * This is the entry point method for loading data from XML.
      * It calls a setupObject() method that must be implemented by the child class.
+     *
      * @param array $attributes The attributes for the XML tag.
      */
     public function loadFromXML($attributes)
@@ -53,6 +53,7 @@ abstract class XMLElement
     /**
      * Returns the assoc array of attributes.
      * All attribute names (keys) are lowercase.
+     *
      * @return array
      */
     public function getAttributes()
@@ -63,9 +64,11 @@ abstract class XMLElement
     /**
      * Gets a particular attribute by [case-insensitive] name.
      * If attribute is not set then the $defaultValue is returned.
-     * @param  string $name         The [case-insensitive] name of the attribute to lookup.
-     * @param  mixed  $defaultValue The default value to use in case the attribute is not set.
-     * @return mixed  The value of the attribute or $defaultValue if not set.
+     *
+     * @param string $name         The [case-insensitive] name of the attribute to lookup.
+     * @param mixed  $defaultValue The default value to use in case the attribute is not set.
+     *
+     * @return mixed The value of the attribute or $defaultValue if not set.
      */
     public function getAttribute($name, $defaultValue = null)
     {
@@ -80,7 +83,8 @@ abstract class XMLElement
     /**
      * Converts value specified in XML to a boolean value.
      * This is to support the default value when used w/ a boolean column.
-     * @return value
+     *
+     * @return bool
      */
     protected function booleanValue($val)
     {
@@ -104,7 +108,7 @@ abstract class XMLElement
             $values[] = trim($v);
         }
 
-        $value = implode($values, ' | ');
+        $value = implode(' | ', $values);
         if (empty($value) || ' | ' === $value) {
             return null;
         }
@@ -114,6 +118,7 @@ abstract class XMLElement
 
     /**
      * Appends DOM elements to represent this object in XML.
+     *
      * @param DOMNode $node
      */
     abstract public function appendXml(DOMNode $node);
@@ -121,7 +126,8 @@ abstract class XMLElement
     /**
      * Sets an associated VendorInfo object.
      *
-     * @param  mixed      $data VendorInfo object or XML attrib data (array)
+     * @param mixed $data VendorInfo object or XML attrib data (array)
+     *
      * @return VendorInfo
      */
     public function addVendorInfo($data)
@@ -141,6 +147,7 @@ abstract class XMLElement
 
     /**
      * Gets the any associated VendorInfo object.
+     *
      * @return VendorInfo
      */
     public function getVendorInfoForType($type)
@@ -153,31 +160,33 @@ abstract class XMLElement
         }
     }
 
-  /**
-   * Find the best class name for a given behavior
-   * Looks in build.properties for path like propel.behavior.[bname].class
-   * If not found, tries to autoload [Bname]Behavior
-   * If no success, returns 'Behavior'
-   *
-   * @param  string $bname behavior name, e.g. 'timestampable'
-   * @return string        behavior class name, e.g. 'TimestampableBehavior'
-   * @throws InvalidArgumentException
-   */
-  public function getConfiguredBehavior($bname)
-  {
-    if ($config = $this->getGeneratorConfig()) {
-      if ($class = $config->getConfiguredBehavior($bname)) {
-        return $class;
-      }
-    }
-    // fallback: maybe the behavior is loaded or autoloaded
-    $gen = new PhpNameGenerator();
-    if (class_exists($class = $gen->generateName(array($bname, PhpNameGenerator::CONV_METHOD_PHPNAME)) . 'Behavior')) {
-      return $class;
-    }
+    /**
+     * Find the best class name for a given behavior
+     * Looks in build.properties for path like propel.behavior.[bname].class
+     * If not found, tries to autoload [Bname]Behavior
+     * If no success, returns 'Behavior'
+     *
+     * @param string $bname behavior name, e.g. 'timestampable'
+     *
+     * @return string behavior class name, e.g. 'TimestampableBehavior'
+     *
+     * @throws InvalidArgumentException
+     */
+    public function getConfiguredBehavior($bname)
+    {
+        if ($config = $this->getGeneratorConfig()) {
+            if ($class = $config->getConfiguredBehavior($bname)) {
+                return $class;
+            }
+        }
+        // fallback: maybe the behavior is loaded or autoloaded
+        $gen = new PhpNameGenerator();
+        if (class_exists($class = $gen->generateName(array($bname, PhpNameGenerator::CONV_METHOD_PHPNAME)) . 'Behavior')) {
+            return $class;
+        }
 
-    throw new InvalidArgumentException(sprintf('Unknown behavior "%s"; make sure you configured the propel.behavior.%s.class setting in your build.properties', $bname, $bname));
-  }
+        throw new InvalidArgumentException(sprintf('Unknown behavior "%s"; make sure you configured the propel.behavior.%s.class setting in your build.properties', $bname, $bname));
+    }
 
     /**
      * String representation of the current object.
@@ -198,10 +207,11 @@ abstract class XMLElement
 
     /**
      * Magic string method
+     *
      * @see toString()
      */
     public function __toString()
     {
-      return $this->toString();
+        return $this->toString();
     }
 }

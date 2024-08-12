@@ -20,13 +20,12 @@ require_once dirname(__FILE__) . '/../../../../../runtime/lib/Propel.php';
  * @version    $Revision$
  * @package    generator.behavior.versionable
  */
-class VersionableBehaviorObjectBuilderModifierTest extends PHPUnit_Framework_TestCase
+class VersionableBehaviorObjectBuilderModifierTest extends \PHPUnit\Framework\TestCase
 {
-
-    public function setUp()
+    public function setUp(): void
     {
         if (!class_exists('VersionableBehaviorTest1')) {
-            $schema = <<<EOF
+            $schema = <<<XML
 <database name="versionable_behavior_test_1">
     <table name="versionable_behavior_test_1">
         <column name="id" primaryKey="true" type="INTEGER" autoIncrement="true" />
@@ -65,14 +64,13 @@ class VersionableBehaviorObjectBuilderModifierTest extends PHPUnit_Framework_Tes
         </foreign-key>
         <behavior name="versionable" />
     </table>
-
 </database>
-EOF;
+XML;
             PropelQuickBuilder::buildSchema($schema);
         }
 
         if (!class_exists('VersionableBehaviorTest6')) {
-            $schema2 = <<<EOF
+            $schema2 = <<<XML
         <database name="versionable_behavior_test_2" defaultPhpNamingMethod="nochange">
             <table name="VersionableBehaviorTest6">
                 <column name="Id" primaryKey="true" type="INTEGER" autoIncrement="true" />
@@ -100,12 +98,13 @@ EOF;
                     <parameter name="version_comment_column" value="MyComment" />
                 </behavior>
             </table>
-EOF;
+        </database>
+XML;
             PropelQuickBuilder::buildSchema($schema2);
         }
 
         if (!class_exists('VersionableBehaviorTest8')) {
-            $schema3 = <<<EOF
+            $schema3 = <<<XML
         <database name="versionable_behavior_test_3">
             <table name="VersionableBehaviorTest8">
                 <column name="alter_id" primaryKey="true" type="INTEGER" autoIncrement="true" />
@@ -127,12 +126,13 @@ EOF;
                 </foreign-key>
                 <behavior name="versionable" />
             </table>
-EOF;
+        </database>
+XML;
             PropelQuickBuilder::buildSchema($schema3);
         }
 
         if (!class_exists('VersionableBehaviorTest10')) {
-            $schema4 = <<<EOF
+            $schema4 = <<<XML
         <database name="versionable_behavior_test_4">
             <table name="VersionableBehaviorTest10">
                 <column name="id" primaryKey="true" type="INTEGER" autoIncrement="true" />
@@ -162,8 +162,33 @@ EOF;
                 </foreign-key>
             </table>
         </database>
-EOF;
+XML;
             PropelQuickBuilder::buildSchema($schema4);
+        }
+
+        if (!class_exists('VersionableBehaviorTest13')) {
+            $schema5 = <<<XML
+        <database name="versionable_behavior_test_5">
+            <table name="VersionableBehaviorTest13">
+                <column name="id" primaryKey="true" type="INTEGER" autoIncrement="true" />
+                <column name="name" type="varchar" size="64" />
+
+                <behavior name="versionable" />
+            </table>
+
+            <table name="VersionableBehaviorTest14">
+                <column name="foo_id" primaryKey="true" type="INTEGER" autoIncrement="false" />
+                <column name="value" type="VARCHAR" size="25" />
+
+                <behavior name="versionable" />
+
+                <foreign-key foreignTable="VersionableBehaviorTest13">
+                    <reference local="foo_id" foreign="id" />
+                </foreign-key>
+            </table>
+        </database>
+XML;
+            PropelQuickBuilder::buildSchema($schema5);
         }
     }
 
@@ -425,6 +450,7 @@ EOF;
      */
     public function testToVersionThrowsExceptionOnIncorrectVersion()
     {
+        $this->expectException(PropelException::class);
         $o = new VersionableBehaviorTest1();
         $o->setBar(123); // version 1
         $o->save();
@@ -891,17 +917,17 @@ EOF;
         $b1->save();
     }
 
-  public function testWithInheritance()
-  {
-        $b1 = new VersionableBehaviorTest8Foo();
-        $b1->save();
+    public function testWithInheritance()
+    {
+          $b1 = new VersionableBehaviorTest8Foo();
+          $b1->save();
 
-        $b1->setFoobar('name');
-        $b1->save();
+          $b1->setFoobar('name');
+          $b1->save();
 
-        $object = $b1->getOneVersion($b1->getVersion());
-        $this->assertTrue($object instanceof Versionablebehaviortest8Version);
-  }
+          $object = $b1->getOneVersion($b1->getVersion());
+          $this->assertTrue($object instanceof Versionablebehaviortest8Version);
+    }
 
     public function testEnforceVersioning()
     {
@@ -917,5 +943,80 @@ EOF;
 
         $bar->save();
         $this->assertEquals(2, $bar->getVersion());
+    }
+
+    public function testOneToOneHasForeignVersionColumn()
+    {
+        $this->assertTrue(class_exists('VersionableBehaviorTest13Peer'));
+
+        $this->assertEquals('VersionableBehaviorTest13_version.VersionableBehaviorTest14_id', VersionableBehaviorTest13VersionPeer::VERSIONABLEBEHAVIORTEST14_ID);
+        $this->assertEquals('VersionableBehaviorTest13_version.VersionableBehaviorTest14_version', VersionableBehaviorTest13VersionPeer::VERSIONABLEBEHAVIORTEST14_VERSION);
+    }
+
+    public function testOneToOneRelatesSingle()
+    {
+        $foo = new VersionableBehaviorTest13();
+        $foo->setName('Foo');
+
+        $bar = new VersionableBehaviorTest14();
+        $bar->setValue('Something');
+
+        $foo->setVersionableBehaviorTest14($bar);
+        $foo->save();
+
+        $this->assertEquals(1, $foo->getVersion());
+        $this->assertEquals(1, $bar->getVersion());
+
+        $foo = VersionableBehaviorTest13Query::create()->findOne();
+        $this->assertInstanceOf('VersionableBehaviorTest13', $foo);
+
+        $bar = $foo->getVersionableBehaviorTest14();
+        $this->assertInstanceOf('VersionableBehaviorTest14', $bar);
+
+        $this->assertFalse($foo->isVersioningNecessary());
+
+        $bar->setValue('Something new');
+        $this->assertTrue($foo->isVersioningNecessary());
+
+        $foo->save();
+
+        $this->assertEquals(2, $foo->getVersion());
+        $this->assertEquals(2, $bar->getVersion());
+
+        $foo->toVersion(1);
+
+        $this->assertEquals('Something', $foo->getVersionableBehaviorTest14()->getValue());
+    }
+
+    public function testVersionColumnNameCaseInsensitivity()
+    {
+        $schema = <<<XML
+        <database name="versionable_behavior_test_case_insensitivity">
+            <table name="VersionableBehaviorTestCaseInsensitivity">
+                <column name="id" primaryKey="true" type="INTEGER" autoIncrement="true" />
+                <column name="name" type="varchar" size="64" />
+
+                <behavior name="versionable">
+                    <parameter name="version_column" value="Version"/>
+                </behavior>
+            </table>
+        </database>
+XML;
+
+        $builder = new PropelQuickBuilder();
+        $builder->setSchema($schema);
+
+        $classes = $builder->getClasses();
+
+        preg_match_all('/public function getVersion\(/', $classes, $getterMatches);
+        preg_match_all('/public function filterByVersion\(/', $classes, $filterMatches);
+
+        // there should be two versions of this getter in the source.  one for the main
+        // class and one for the version class
+        $this->assertEquals(2, sizeof($getterMatches[0]));
+
+        // there should be two versions of the filter.  one for the main query class
+        // and one for the version query class
+        $this->assertEquals(2, sizeof($filterMatches[0]));
     }
 }
